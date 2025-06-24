@@ -1,5 +1,5 @@
 // App.tsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Topbar from './components/Topbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -55,7 +55,7 @@ const App = () => {
       case 'jobs':
         return <JobsPage />;
       case 'login':
-        return <Login />;
+        return <Login onNavigate={setCurrentPage}/>;
       case 'register':
         return <Register onNavigate={setCurrentPage} />;
       case 'post-job':
@@ -78,7 +78,7 @@ const App = () => {
       {/* Simple Footer */}
       <footer className="w-full bg-gray-900 text-gray-300 py-6 text-center text-sm mt-12">
         <p>&copy; {new Date().getFullYear()} Job Board Pro. All rights reserved.</p>
-        <p className="mt-1">Built with React & Tailwind CSS</p>
+        <p className="mt-1">Built by Isaac & Dorothy</p>
       </footer>
     </div>
   );

@@ -1,6 +1,8 @@
-// src/pages/Login.tsx
-
 import React, { useState } from 'react';
+
+interface LoginProps {
+  onNavigate: (page: string) => void;
+}
 
 /**
  * Interface for the login form state
@@ -13,17 +15,15 @@ interface LoginFormData {
 /**
  * Login Page Component
  */
-const Login: React.FC = () => {
-  // Local component state to handle form input values
+const Login: React.FC<LoginProps> = ({ onNavigate }) => {
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
   });
 
-  // Local component state to handle error messages or success
   const [error, setError] = useState<string | null>(null);
 
-  // Handle changes in form inputs
+  // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -36,17 +36,13 @@ const Login: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Very basic form validation
     if (!formData.email || !formData.password) {
       setError('Please fill in all fields.');
       return;
     }
 
-    // Simulate login (in a real app, call your backend API here)
     console.log('Logging in with:', formData);
-    setError(null); // Clear any previous error
-
-    // Example response simulation
+    setError(null);
     alert(`Welcome back, ${formData.email}`);
   };
 
@@ -63,7 +59,7 @@ const Login: React.FC = () => {
           <div className="mb-4 text-red-600 font-medium">{error}</div>
         )}
 
-        {/* Email Field */}
+        {/* Email */}
         <label className="block mb-2 text-sm font-medium text-gray-700" htmlFor="email">
           Email
         </label>
@@ -77,7 +73,7 @@ const Login: React.FC = () => {
           className="w-full p-3 mb-4 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
         />
 
-        {/* Password Field */}
+        {/* Password */}
         <label className="block mb-2 text-sm font-medium text-gray-700" htmlFor="password">
           Password
         </label>
@@ -99,17 +95,27 @@ const Login: React.FC = () => {
           Login
         </button>
 
-        {/* Forgot password link */}
-        <button
-          type="button"
-          onClick={() => alert('Forgot Password feature coming soon!')}
-          className="block text-blue-600 hover:underline mt-4 mx-auto"
-        >
-          Forgot Password?
-        </button>
+        {/* Forgot password & Register link */}
+        <div className="mt-4 text-center text-xs text-gray-600">
+          <button
+            type="button"
+            onClick={() => alert('Forgot Password feature coming soon!')}
+            className="text-blue-600 hover:underline mr-2"
+          >
+            Forgot Password?
+          </button>
+          | Don’t have an account?
+          <button
+            type="button"
+            onClick={() => onNavigate('register')}
+            className="text-blue-600 hover:underline ml-2"
+          >
+            Register here
+          </button>
+        </div>
       </form>
     </div>
   );
 };
 
-export default Login; 
+export default Login;
