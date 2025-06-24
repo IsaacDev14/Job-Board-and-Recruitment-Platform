@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Topbar from './components/Topbar';
 import Home from './pages/Home';
-
+import Login from './pages/Login';
 
 /**
  * Placeholder component: Jobs Page
@@ -16,22 +16,6 @@ const JobsPage = () => (
       <li>Data Scientist - Microsoft</li>
       <li>UX Designer - Apple</li>
     </ul>
-  </div>
-);
-
-/**
- * Placeholder component: Login Page
- */
-const LoginPage = () => (
-  <div className="py-20 text-center text-gray-700 min-h-[50vh] flex flex-col justify-center items-center">
-    <h2 className="text-3xl font-bold mb-4">Login to Your Account</h2>
-    <p className="text-lg mb-6">A login form would go here.</p>
-    <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-      <input type="email" placeholder="Email" className="w-full p-3 mb-4 border border-gray-300 rounded-md" />
-      <input type="password" placeholder="Password" className="w-full p-3 mb-4 border border-gray-300 rounded-md" />
-      <button className="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700">Login</button>
-      <button onClick={() => alert('Forgot password')} className="text-blue-600 hover:underline mt-4">Forgot Password?</button>
-    </div>
   </div>
 );
 
@@ -91,7 +75,7 @@ const App = () => {
       case 'jobs':
         return <JobsPage />;
       case 'login':
-        return <LoginPage />;
+        return <Login />;
       case 'register':
         return <RegisterPage />;
       case 'post-job':
