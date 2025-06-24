@@ -9,22 +9,33 @@ import PostJob from './pages/PostJob';
 import sampleJobs from './data/SampleData.json';
 import type { Job } from './pages/Jobs';
 
-
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('home');
   const [selectedJobId, setSelectedJobId] = useState<number>();
+  const [filterCategory, setFilterCategory] = useState<string | undefined>(undefined);
 
-  const handleNavigate = (page: string, jobId?: number) => {
+  // Handle navigation and optional parameters: jobId or category filter
+  const handleNavigate = (page: string, param?: number | string) => {
     setCurrentPage(page);
-    if (jobId !== undefined) setSelectedJobId(jobId);
+
+    if (page === 'job-details' && typeof param === 'number') {
+      setSelectedJobId(param);
+    } else if (page === 'jobs' && typeof param === 'string') {
+      setFilterCategory(param);
+    } else {
+      // Clear filter if navigating elsewhere or no param
+      setFilterCategory(undefined);
+      setSelectedJobId(undefined);
+    }
   };
 
+  // Render component based on current page and pass props
   const renderContent = () => {
     switch (currentPage) {
       case 'home':
         return <Home onNavigate={handleNavigate} />;
       case 'jobs':
-        return <Jobs onNavigate={handleNavigate} />;
+        return <Jobs onNavigate={handleNavigate} filterCategory={filterCategory} />;
       case 'job-details': {
         const job = (sampleJobs as Job[]).find(j => j.id === selectedJobId);
         return job ? <JobDetails job={job} onNavigate={handleNavigate} /> : <p>Job not found.</p>;

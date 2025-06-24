@@ -14,9 +14,10 @@ export interface Job {
 
 interface JobsProps {
   onNavigate: (page: string, jobId?: number) => void;
+  filterCategory?: string;  // Optional filter string
 }
 
-const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
+const Jobs: React.FC<JobsProps> = ({ onNavigate, filterCategory }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,21 +26,37 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
     (async () => {
       setIsLoading(true);
       await new Promise(res => setTimeout(res, 500));
-      const filtered: Job[] = (sampleJobs as Job[]).filter(job =>
-        [job.title, job.company, job.location].some(field =>
+
+      // Filter jobs based on search term AND category filter if provided
+      const filtered: Job[] = (sampleJobs as Job[]).filter(job => {
+        // Check if job matches category filter if it exists
+        const matchesCategory = filterCategory
+          ? job.title.toLowerCase().includes(filterCategory.toLowerCase()) ||
+            job.type.toLowerCase().includes(filterCategory.toLowerCase()) ||
+            job.company.toLowerCase().includes(filterCategory.toLowerCase())
+          : true;
+
+        // Check if job matches search term
+        const matchesSearch = [job.title, job.company, job.location].some(field =>
           field.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
+        );
+
+        return matchesCategory && matchesSearch;
+      });
+
       setFilteredJobs(filtered);
       setIsLoading(false);
     })();
-  }, [searchTerm]);
+  }, [searchTerm, filterCategory]);
 
   return (
     <section className="min-h-screen py-16 px-4 bg-gray-50">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-4xl font-bold text-center mb-12">Discover Your Next Career</h2>
+        <h2 className="text-4xl font-bold text-center mb-12">
+          {filterCategory ? `Jobs in "${filterCategory}"` : 'Discover Your Next Career'}
+        </h2>
 
+        {/* Search input */}
         <div className="mb-12 flex justify-center">
           <div className="relative w-full max-w-2xl">
             <input
@@ -55,6 +72,7 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
           </div>
         </div>
 
+        {/* Job listings or loading */}
         {isLoading ? (
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-8">
             {Array.from({ length: 6 }).map((_, idx) => (
