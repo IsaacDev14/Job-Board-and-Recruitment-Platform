@@ -5,21 +5,8 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import PostJob from './pages/PostJob';
+import Jobs from './pages/Jobs';
 
-/**
- * Placeholder component: Jobs Page
- */
-const JobsPage = () => (
-  <div className="py-20 text-center text-gray-700 min-h-[50vh] flex flex-col justify-center items-center">
-    <h2 className="text-3xl font-bold mb-4">Job Listings</h2>
-    <p className="text-lg">This is where all the job listings would appear. Filters and search will be added here.</p>
-    <ul className="list-disc list-inside text-left mt-8 max-w-sm">
-      <li>Software Engineer - Google</li>
-      <li>Data Scientist - Microsoft</li>
-      <li>UX Designer - Apple</li>
-    </ul>
-  </div>
-);
 
 /**
  * Main App Component
@@ -33,7 +20,7 @@ const App = () => {
       case 'home':
         return <Home onNavigate={setCurrentPage} />;
       case 'jobs':
-        return <JobsPage />;
+        return <Jobs />;
       case 'login':
         return <Login onNavigate={setCurrentPage} />;
       case 'register':
