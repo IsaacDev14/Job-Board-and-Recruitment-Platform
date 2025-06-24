@@ -1,7 +1,8 @@
 // App.tsx
 import React, { useState } from 'react';
-import Topbar from './Topbar';
-import Home from './Home';
+import Topbar from './components/Topbar';
+import Home from './pages/Home';
+
 
 /**
  * Placeholder component: Jobs Page
