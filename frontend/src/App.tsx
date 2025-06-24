@@ -20,7 +20,7 @@ const App = () => {
       case 'home':
         return <Home onNavigate={setCurrentPage} />;
       case 'jobs':
-        return <Jobs />;
+        return <Jobs onNavigate={setCurrentPage}/>;
       case 'login':
         return <Login onNavigate={setCurrentPage} />;
       case 'register':
