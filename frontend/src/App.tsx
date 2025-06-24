@@ -1,51 +1,53 @@
-// src/App.tsx
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Topbar from './components/Topbar';
 import Home from './pages/Home';
+import Jobs from './pages/Jobs';
+import JobDetails from './pages/JobDetails';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import PostJob from './pages/PostJob';
-import Jobs from './pages/Jobs';
+import sampleJobs from './data/SampleData.json';
+import type { Job } from './pages/Jobs';
 
 
-/**
- * Main App Component
- * Handles navigation between pages and renders Topbar and footer
- */
-const App = () => {
+const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('home');
+  const [selectedJobId, setSelectedJobId] = useState<number>();
+
+  const handleNavigate = (page: string, jobId?: number) => {
+    setCurrentPage(page);
+    if (jobId !== undefined) setSelectedJobId(jobId);
+  };
 
   const renderContent = () => {
     switch (currentPage) {
       case 'home':
-        return <Home onNavigate={setCurrentPage} />;
+        return <Home onNavigate={handleNavigate} />;
       case 'jobs':
-        return <Jobs onNavigate={setCurrentPage}/>;
+        return <Jobs onNavigate={handleNavigate} />;
+      case 'job-details': {
+        const job = (sampleJobs as Job[]).find(j => j.id === selectedJobId);
+        return job ? <JobDetails job={job} onNavigate={handleNavigate} /> : <p>Job not found.</p>;
+      }
       case 'login':
-        return <Login onNavigate={setCurrentPage} />;
+        return <Login onNavigate={handleNavigate} />;
       case 'register':
-        return <Register onNavigate={setCurrentPage} />;
+        return <Register onNavigate={handleNavigate} />;
       case 'post-job':
-        return <PostJob onNavigate={setCurrentPage} />;
+        return <PostJob onNavigate={handleNavigate} />;
       default:
-        return <Home onNavigate={setCurrentPage} />;
+        return <Home onNavigate={handleNavigate} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans antialiased text-gray-800">
-      {/* Topbar receives navigation handler */}
-      <Topbar onNavigate={setCurrentPage} />
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+    <div className="min-h-screen bg-gray-50">
+      <Topbar onNavigate={handleNavigate} />
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         {renderContent()}
       </main>
-
-      {/* Footer */}
-      <footer className="w-full bg-gray-900 text-gray-300 py-6 text-center text-sm mt-12">
+      <footer className="bg-gray-900 text-gray-300 py-6 text-center">
         <p>&copy; {new Date().getFullYear()} Job Board Pro. All rights reserved.</p>
-        <p className="mt-1">Built by Isaac & Dorothy</p>
       </footer>
     </div>
   );
