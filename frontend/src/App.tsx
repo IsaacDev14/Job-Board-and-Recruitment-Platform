@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import Topbar from './components/Topbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
+import Register from './pages/Register';
 
 /**
  * Placeholder component: Jobs Page
@@ -19,27 +20,6 @@ const JobsPage = () => (
   </div>
 );
 
-/**
- * Placeholder component: Register Page
- */
-const RegisterPage = () => (
-  <div className="py-20 text-center text-gray-700 min-h-[50vh] flex flex-col justify-center items-center">
-    <h2 className="text-3xl font-bold mb-4">Create a New Account</h2>
-    <p className="text-lg mb-6">Registration form would go here.</p>
-    <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-      <input type="text" placeholder="Username" className="w-full p-3 mb-4 border border-gray-300 rounded-md" />
-      <input type="email" placeholder="Email" className="w-full p-3 mb-4 border border-gray-300 rounded-md" />
-      <input type="password" placeholder="Password" className="w-full p-3 mb-4 border border-gray-300 rounded-md" />
-      <select className="w-full p-3 mb-4 border border-gray-300 rounded-md">
-        <option value="">Select Role</option>
-        <option value="job_seeker">Job Seeker</option>
-        <option value="recruiter">Recruiter</option>
-      </select>
-      <button className="w-full bg-green-600 text-white p-3 rounded-md hover:bg-green-700">Register</button>
-      <p className="text-sm text-gray-600 mt-4">Already have an account? <button onClick={() => alert('Go to login')} className="text-blue-600 hover:underline">Login here</button></p>
-    </div>
-  </div>
-);
 
 /**
  * Placeholder component: Post Job Page
@@ -77,7 +57,7 @@ const App = () => {
       case 'login':
         return <Login />;
       case 'register':
-        return <RegisterPage />;
+        return <Register  />;
       case 'post-job':
         return <PostJobPage />;
       default:
