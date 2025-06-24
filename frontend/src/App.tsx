@@ -57,7 +57,7 @@ const App = () => {
       case 'login':
         return <Login />;
       case 'register':
-        return <Register  />;
+        return <Register onNavigate={setCurrentPage} />;
       case 'post-job':
         return <PostJobPage />;
       default:

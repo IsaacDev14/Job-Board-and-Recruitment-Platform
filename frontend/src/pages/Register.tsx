@@ -2,11 +2,11 @@
 
 import React from 'react';
 
-/**
- * Register Page Component
- * Allows users to create a new account (Job Seeker or Recruiter)
- */
-const Register: React.FC = () => {
+interface RegisterProps {
+  onNavigate: (page: string) => void;
+}
+
+const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
   return (
     <div className="py-16 text-center text-gray-700 min-h-[50vh] flex flex-col justify-center items-center">
       <h2 className="text-2xl font-bold mb-3">Create a New Account</h2>
@@ -44,7 +44,7 @@ const Register: React.FC = () => {
         <p className="text-xs text-gray-600 mt-4">
           Already have an account?{' '}
           <button
-            onClick={() => alert('Navigate to Login')}
+            onClick={() => onNavigate('login')}
             className="text-blue-600 hover:underline"
           >
             Login here
