@@ -1,70 +1,56 @@
 // src/context/AuthContext.tsx
+import React, { useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
+import type { User } from '../types/job';
+import { AuthContext} from './AuthContextDefinition'; // Import AuthContext and AuthContextType
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  role: 'job_seeker' | 'recruiter';
-}
 
-interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  login: (userData: User, token: string) => void;
-  logout: () => void;
-  isAuthenticated: boolean;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load from localStorage on first mount
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('token');
+    const loadUserFromLocalStorage = () => {
+      try {
+        const storedUser = localStorage.getItem('user');
+        const storedToken = localStorage.getItem('token');
 
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
-      setToken(storedToken);
-    }
+        if (storedUser && storedToken) {
+          const parsedUser: User = JSON.parse(storedUser);
+          setUser(parsedUser);
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.error("Failed to load user from localStorage:", error);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadUserFromLocalStorage();
   }, []);
 
-  // Save to localStorage when user/token changes
-  useEffect(() => {
-    if (user && token) {
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('token', token);
-    } else {
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
-    }
-  }, [user, token]);
-
-  const login = (userData: User, newToken: string) => {
+  const login = (userData: User, token: string) => {
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('token', token);
     setUser(userData);
-    setToken(newToken);
+    setIsAuthenticated(true);
   };
 
   const logout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
     setUser(null);
-    setToken(null);
-    localStorage.clear();
+    setIsAuthenticated(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
-  return context;
 };

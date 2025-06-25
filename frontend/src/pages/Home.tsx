@@ -1,7 +1,10 @@
+// src/pages/Home.tsx
 import React from 'react';
 
+// Adjusted type to match App.tsx's handleNavigate, which can accept number or string params,
+// but for 'jobs' navigation, we're currently passing no param.
 interface HomeProps {
-  onNavigate: (page: string, param?: string) => void;
+  onNavigate: (page: string, param?: number | string) => void;
 }
 
 const CategoryCard = ({
@@ -13,10 +16,13 @@ const CategoryCard = ({
   title: string;
   jobs: string;
   icon: string;
-  onNavigate: (page: string, param?: string) => void;
+  // Adjusted onNavigate type in CategoryCard to match HomeProps
+  onNavigate: (page: string, param?: number | string) => void;
 }) => (
   <div
-    onClick={() => onNavigate('jobs', title)} // Pass category title to Jobs
+    // CHANGED: No longer passing `title` as a parameter to 'jobs' page,
+    // as Jobs.tsx currently fetches all jobs and filters locally.
+    onClick={() => onNavigate('jobs')}
     className="bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 ease-in-out transform hover:-translate-y-1 cursor-pointer border border-gray-200 flex flex-col items-center text-center"
   >
     <div className="text-5xl mb-4" role="img" aria-label={title}>
@@ -76,6 +82,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
       <section className="bg-white rounded-xl shadow-lg p-6 sm:p-8 lg:p-10">
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">Popular Job Categories</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* CHANGED: No longer passing title to onNavigate for 'jobs' page */}
           <CategoryCard title="Software Development" jobs="12,000+" icon="💻" onNavigate={onNavigate} />
           <CategoryCard title="Data Science" jobs="8,500+" icon="📊" onNavigate={onNavigate} />
           <CategoryCard title="Digital Marketing" jobs="7,200+" icon="📈" onNavigate={onNavigate} />

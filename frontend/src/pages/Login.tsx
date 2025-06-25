@@ -1,140 +1,91 @@
 // src/pages/Login.tsx
-
 import React, { useState } from 'react';
-// Import icons from react-icons (install with `npm install react-icons` or `yarn add react-icons`)
-import { FaEnvelope, FaLock } from 'react-icons/fa';
+import { useAuth } from '../hooks/useAuth';
+import api from '../api/api';
+import type { User } from '../types/job'; // ADDED 'type' keyword
 
 interface LoginProps {
   onNavigate: (page: string) => void;
 }
 
-/**
- * Interface for the login form state
- */
-interface LoginFormData {
-  email: string;
-  password: string;
-}
-
-/**
- * Login Page Component
- */
 const Login: React.FC<LoginProps> = ({ onNavigate }) => {
-  const [formData, setFormData] = useState<LoginFormData>({
-    email: '',
-    password: '',
-  });
-
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
 
-  // Handle input changes and update form state
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Basic validation
-    if (!formData.email || !formData.password) {
-      setError('Please fill in all fields.');
-      return;
-    }
-
-    // Simulate login logic
-    console.log('Logging in with:', formData);
     setError(null);
-    alert(`Welcome back, ${formData.email}`);
+    setLoading(true);
+
+    try {
+      const response = await api.get<User[]>(`/users?username=${username}&password=${password}`);
+
+      if (response.data && response.data.length > 0) {
+        const loggedInUser = response.data[0];
+        const dummyToken = `dummy-jwt-${loggedInUser.id}-${Date.now()}`;
+        login(loggedInUser, dummyToken);
+        onNavigate('dashboard');
+      } else {
+        setError('Invalid username or password.');
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError('Failed to log in. Please check your network or server status.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="py-20 text-gray-700 min-h-[50vh] flex flex-col justify-center items-center">
-      {/* Page Title */}
-      <h2 className="text-3xl font-bold mb-4 text-center">Login to Your Account</h2>
-      <p className="text-lg mb-6 text-center">Enter your credentials to continue.</p>
-
-      {/* Login Form */}
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-lg shadow-md w-full max-w-md text-left"
-      >
-        {/* Display error message */}
-        {error && (
-          <div className="mb-4 text-red-600 font-medium">{error}</div>
-        )}
-
-        {/* Email input with icon */}
-        <label
-          className="block mb-2 text-sm font-medium text-gray-700"
-          htmlFor="email"
-        >
-          Email
-        </label>
-        <div className="relative mb-4">
-          <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="you@example.com"
-            className="w-full pl-10 p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-
-        {/* Password input with icon */}
-        <label
-          className="block mb-2 text-sm font-medium text-gray-700"
-          htmlFor="password"
-        >
-          Password
-        </label>
-        <div className="relative mb-4">
-          <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="********"
-            className="w-full pl-10 p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-
-        {/* Submit button */}
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors"
-        >
-          Login
-        </button>
-
-        {/* Forgot password & register links */}
-        <div className="mt-4 text-center text-xs text-gray-600">
+    <div className="min-h-screen py-16 px-4 bg-gray-50 flex items-center justify-center">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 className="text-3xl font-bold text-center mb-6">Login</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+              Username
+            </label>
+            <input
+              type="text"
+              id="username"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
           <button
-            type="button"
-            onClick={() => alert('Forgot Password feature coming soon!')}
-            className="text-blue-600 hover:underline mr-2"
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+            disabled={loading}
           >
-            Forgot Password?
+            {loading ? 'Logging in...' : 'Login'}
           </button>
-          | Don’t have an account?
-          <button
-            type="button"
-            onClick={() => onNavigate('register')}
-            className="text-blue-600 hover:underline ml-2"
-          >
+        </form>
+        <p className="mt-6 text-center text-gray-600">
+          Don't have an account?{' '}
+          <button onClick={() => onNavigate('register')} className="text-blue-600 hover:underline">
             Register here
           </button>
-        </div>
-      </form>
+        </p>
+      </div>
     </div>
   );
 };

@@ -1,202 +1,299 @@
-[
-  {
-    "id": 1,
-    "title": "Senior Frontend Developer",
-    "company": "Tech Solutions Inc.",
-    "location": "Nairobi, Kenya",
-    "salary": "$3,500 - $4,500/month",
-    "type": "Full-time",
-    "image": "https://cdn.pixabay.com/photo/2020/01/26/20/14/computer-4795762_1280.jpg",
-    "description": "We are seeking an experienced Frontend Developer with strong React skills."
-  },
-  {
-    "id": 2,
-    "title": "Cloud Solutions Architect",
-    "company": "Global Innovations Co.",
-    "location": "Remote (Kenya)",
-    "salary": "$4,000 - $5,500/month",
-    "type": "Contract",
-    "image": "https://images.unsplash.com/photo-1510519138101-570d1dca3d66?q=80&w=2047&auto=format&fit=crop",
-    "description": "Looking for a skilled Cloud Solutions Architect with AWS expertise."
-  },
-  {
-    "id": 3,
-    "title": "Product Manager",
-    "company": "Innovate Kenya Ltd.",
-    "location": "Nairobi, Kenya",
-    "salary": "$3,000 - $4,000/month",
-    "type": "Full-time",
-    "image": "https://images.unsplash.com/photo-1557804506-669a67965ba0?q=80&w=1974&auto=format&fit=crop",
-    "description": "Lead the development of our next-generation products and manage cross-functional teams."
-  },
-  {
-    "id": 4,
-    "title": "Data Scientist",
-    "company": "Analytics Hub",
-    "location": "Mombasa, Kenya",
-    "salary": "$3,200 - $4,200/month",
-    "type": "Full-time",
-    "image": "https://images.unsplash.com/photo-1551288259-cd197c36d2bc?q=80&w=2070&auto=format&fit=crop",
-    "description": "Extract insights from large datasets and build predictive models."
-  },
-  {
-    "id": 5,
-    "title": "Mobile App Developer",
-    "company": "MobDev Solutions",
-    "location": "Remote",
-    "salary": "$2,800 - $3,800/month",
-    "type": "Full-time",
-    "image": "https://images.unsplash.com/photo-1522199755839-a2bacb67c546?q=80&w=2072&auto=format&fit=crop",
-    "description": "Develop high-performance mobile applications for iOS and Android."
-  },
-  {
-    "id": 6,
-    "title": "UX/UI Designer",
-    "company": "Creative Minds Studio",
-    "location": "Nakuru, Kenya",
-    "salary": "$2,500 - $3,500/month",
-    "type": "Full-time",
-    "image": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2000&auto=format&fit=crop",
-    "description": "Design intuitive user interfaces and improve user experience across platforms."
-  },
-  {
-    "id": 7,
-    "title": "DevOps Engineer",
-    "company": "CloudTech Africa",
-    "location": "Remote",
-    "salary": "$3,700 - $4,700/month",
-    "type": "Full-time",
-    "image": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=2000&auto=format&fit=crop",
-    "description": "Implement and maintain CI/CD pipelines and cloud infrastructure."
-  },
-  {
-    "id": 8,
-    "title": "Technical Support Specialist",
-    "company": "SupportHub",
-    "location": "Eldoret, Kenya",
-    "salary": "$1,500 - $2,000/month",
-    "type": "Full-time",
-    "image": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2000&auto=format&fit=crop",
-    "description": "Provide excellent technical support to customers and resolve issues efficiently."
-  },
-  {
-    "id": 9,
-    "title": "Backend Developer",
-    "company": "WebWorks Ltd.",
-    "location": "Nairobi, Kenya",
-    "salary": "$3,200 - $4,200/month",
-    "type": "Full-time",
-    "image": "https://images.unsplash.com/photo-1517433456452-f9633a875f6f?q=80&w=2000&auto=format&fit=crop",
-    "description": "Develop scalable APIs and maintain backend services using Node.js."
-  },
-  {
-    "id": 10,
-    "title": "Digital Marketing Specialist",
-    "company": "MarketGurus",
-    "location": "Kisumu, Kenya",
-    "salary": "$2,200 - $3,000/month",
-    "type": "Full-time",
-    "image": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=2000&auto=format&fit=crop",
-    "description": "Manage social media campaigns and optimize SEO strategies."
-  },
-  {
-    "id": 11,
-    "title": "Quality Assurance Engineer",
-    "company": "NextGen Software",
-    "location": "Nairobi, Kenya",
-    "salary": "$3,000 - $3,800/month",
-    "type": "Full-time",
-    "image": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2000&auto=format&fit=crop",
-    "description": "Design and execute test plans to ensure software quality."
-  },
-  {
-    "id": 12,
-    "title": "Sales Manager",
-    "company": "Retail Corp",
-    "location": "Nairobi, Kenya",
-    "salary": "$3,500 - $4,500/month",
-    "type": "Full-time",
-    "image": "https://images.unsplash.com/photo-1532619675605-ffecf2ff3efb?q=80&w=2000&auto=format&fit=crop",
-    "description": "Lead the sales team to achieve revenue targets."
-  },
-  {
-    "id": 13,
-    "title": "Graphic Designer",
-    "company": "Pixel Perfect",
-    "location": "Mombasa, Kenya",
-    "salary": "$2,000 - $2,800/month",
-    "type": "Contract",
-    "image": "https://images.unsplash.com/photo-1497215842964-222b430dc094?q=80&w=2000&auto=format&fit=crop",
-    "description": "Create compelling graphics for digital and print media."
-  },
-  {
-    "id": 14,
-    "title": "HR Coordinator",
-    "company": "PeopleFirst",
-    "location": "Nairobi, Kenya",
-    "salary": "$2,300 - $3,000/month",
-    "type": "Full-time",
-    "image": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=2000&auto=format&fit=crop",
-    "description": "Coordinate HR activities including recruitment and employee relations."
-  },
-  {
-    "id": 15,
-    "title": "Content Writer",
-    "company": "WriteRight Ltd.",
-    "location": "Remote",
-    "salary": "$1,800 - $2,500/month",
-    "type": "Freelance",
-    "image": "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?q=80&w=2000&auto=format&fit=crop",
-    "description": "Produce engaging articles and web content for various industries."
-  },
-  {
-    "id": 16,
-    "title": "Cybersecurity Analyst",
-    "company": "SecureNet",
-    "location": "Nairobi, Kenya",
-    "salary": "$3,800 - $5,000/month",
-    "type": "Full-time",
-    "image": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2000&auto=format&fit=crop",
-    "description": "Monitor and protect company networks from cyber threats."
-  },
-  {
-    "id": 17,
-    "title": "AI Engineer",
-    "company": "FutureTech Labs",
-    "location": "Nairobi, Kenya",
-    "salary": "$4,500 - $6,000/month",
-    "type": "Full-time",
-    "image": "https://images.unsplash.com/photo-1532074205216-d0e1f8d3f5a9?q=80&w=2000&auto=format&fit=crop",
-    "description": "Develop AI models and machine learning algorithms for innovative projects."
-  },
-  {
-    "id": 18,
-    "title": "Business Analyst",
-    "company": "Consulting Partners",
-    "location": "Nairobi, Kenya",
-    "salary": "$3,200 - $4,000/month",
-    "type": "Full-time",
-    "image": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2000&auto=format&fit=crop",
-    "description": "Analyze business processes and provide data-driven recommendations."
-  },
-  {
-    "id": 19,
-    "title": "Full Stack Developer",
-    "company": "CodeCraft",
-    "location": "Remote",
-    "salary": "$3,500 - $4,800/month",
-    "type": "Full-time",
-    "image": "https://images.unsplash.com/photo-1537432376769-00a64be7d59f?q=80&w=2000&auto=format&fit=crop",
-    "description": "Build and maintain web applications using React and Node.js."
-  },
-  {
-    "id": 20,
-    "title": "Project Coordinator",
-    "company": "BuildRight",
-    "location": "Nairobi, Kenya",
-    "salary": "$2,700 - $3,500/month",
-    "type": "Full-time",
-    "image": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=2000&auto=format&fit=crop",
-    "description": "Assist project managers in coordinating activities and timelines."
-  }
-]
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "jobseeker_alice",
+      "email": "alice@example.com",
+      "password": "password123",
+      "role": "job_seeker"
+    },
+    {
+      "id": 2,
+      "username": "recruiter_bob",
+      "email": "bob@example.com",
+      "password": "password123",
+      "role": "recruiter"
+    },
+    {
+      "id": 3,
+      "username": "recruiter_techsolutions",
+      "email": "techsolutions@example.com",
+      "password": "password123",
+      "role": "recruiter"
+    },
+    {
+      "id": 4,
+      "username": "jobseeker_charlie",
+      "email": "charlie@example.com",
+      "password": "password123",
+      "role": "job_seeker"
+    }
+  ],
+  "companies": [
+    { "id": 101, "name": "Tech Solutions Inc." },
+    { "id": 102, "name": "Global Innovations Co." },
+    { "id": 103, "name": "Innovate Kenya Ltd." },
+    { "id": 104, "name": "Analytics Hub" },
+    { "id": 105, "name": "MobDev Solutions" },
+    { "id": 106, "name": "Creative Minds Studio" },
+    { "id": 107, "name": "CloudTech Africa" },
+    { "id": 108, "name": "SupportHub" },
+    { "id": 109, "name": "WebWorks Ltd." },
+    { "id": 110, "name": "MarketGurus" },
+    { "id": 111, "name": "NextGen Software" },
+    { "id": 112, "name": "Retail Corp" },
+    { "id": 113, "name": "Pixel Perfect" },
+    { "id": 114, "name": "PeopleFirst" },
+    { "id": 115, "name": "WriteRight Ltd." },
+    { "id": 116, "name": "SecureNet" },
+    { "id": 117, "name": "FutureTech Labs" },
+    { "id": 118, "name": "Consulting Partners" },
+    { "id": 119, "name": "CodeCraft" },
+    { "id": 120, "name": "BuildRight" }
+  ],
+  "jobs": [
+    {
+      "id": 1,
+      "title": "Senior Frontend Developer",
+      "company": "Tech Solutions Inc.",
+      "company_id": 101,
+      "location": "Nairobi, Kenya",
+      "salary_range": "$3,500 - $4,500/month",
+      "type": "Full-time",
+      "image": "https://cdn.pixabay.com/photo/2020/01/26/20/14/computer-4795762_1280.jpg",
+      "description": "We are seeking an experienced Frontend Developer with strong React skills."
+    },
+    {
+      "id": 2,
+      "title": "Cloud Solutions Architect",
+      "company": "Global Innovations Co.",
+      "company_id": 102,
+      "location": "Remote (Kenya)",
+      "salary_range": "$4,000 - $5,500/month",
+      "type": "Contract",
+      "image": "https://images.unsplash.com/photo-1510519138101-570d1dca3d66?q=80&w=2047&auto=format&fit=crop",
+      "description": "Looking for a skilled Cloud Solutions Architect with AWS expertise."
+    },
+    {
+      "id": 3,
+      "title": "Product Manager",
+      "company": "Innovate Kenya Ltd.",
+      "company_id": 103,
+      "location": "Nairobi, Kenya",
+      "salary_range": "$3,000 - $4,000/month",
+      "type": "Full-time",
+      "image": "https://images.unsplash.com/photo-1557804506-669a67965ba0?q=80&w=1974&auto=format&fit=crop",
+      "description": "Lead the development of our next-generation products and manage cross-functional teams."
+    },
+    {
+      "id": 4,
+      "title": "Data Scientist",
+      "company": "Analytics Hub",
+      "company_id": 104,
+      "location": "Mombasa, Kenya",
+      "salary_range": "$3,200 - $4,200/month",
+      "type": "Full-time",
+      "image": "https://images.unsplash.com/photo-1551288259-cd197c36d2bc?q=80&w=2070&auto=format&fit=crop",
+      "description": "Extract insights from large datasets and build predictive models."
+    },
+    {
+      "id": 5,
+      "title": "Mobile App Developer",
+      "company": "MobDev Solutions",
+      "company_id": 105,
+      "location": "Remote",
+      "salary_range": "$2,800 - $3,800/month",
+      "type": "Full-time",
+      "image": "https://images.unsplash.com/photo-1522199755839-a2bacb67c546?q=80&w=2072&auto=format&fit=crop",
+      "description": "Develop high-performance mobile applications for iOS and Android."
+    },
+    {
+      "id": 6,
+      "title": "UX/UI Designer",
+      "company": "Creative Minds Studio",
+      "company_id": 106,
+      "location": "Nakuru, Kenya",
+      "salary_range": "$2,500 - $3,500/month",
+      "type": "Full-time",
+      "image": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2000&auto=format&fit=crop",
+      "description": "Design intuitive user interfaces and improve user experience across platforms."
+    },
+    {
+      "id": 7,
+      "title": "DevOps Engineer",
+      "company": "CloudTech Africa",
+      "company_id": 107,
+      "location": "Remote",
+      "salary_range": "$3,700 - $4,700/month",
+      "type": "Full-time",
+      "image": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=2000&auto=format&fit=crop",
+      "description": "Implement and maintain CI/CD pipelines and cloud infrastructure."
+    },
+    {
+      "id": 8,
+      "title": "Technical Support Specialist",
+      "company": "SupportHub",
+      "company_id": 108,
+      "location": "Eldoret, Kenya",
+      "salary_range": "$1,500 - $2,000/month",
+      "type": "Full-time",
+      "image": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2000&auto=format&fit=crop",
+      "description": "Provide excellent technical support to customers and resolve issues efficiently."
+    },
+    {
+      "id": 9,
+      "title": "Backend Developer",
+      "company": "WebWorks Ltd.",
+      "company_id": 109,
+      "location": "Nairobi, Kenya",
+      "salary_range": "$3,200 - $4,200/month",
+      "type": "Full-time",
+      "image": "https://images.unsplash.com/photo-1517433456452-f9633a875f6f?q=80&w=2000&auto=format&fit=crop",
+      "description": "Develop scalable APIs and maintain backend services using Node.js."
+    },
+    {
+      "id": 10,
+      "title": "Digital Marketing Specialist",
+      "company": "MarketGurus",
+      "company_id": 110,
+      "location": "Kisumu, Kenya",
+      "salary_range": "$2,200 - $3,000/month",
+      "type": "Full-time",
+      "image": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=2000&auto=format&fit=crop",
+      "description": "Manage social media campaigns and optimize SEO strategies."
+    },
+    {
+      "id": 11,
+      "title": "Quality Assurance Engineer",
+      "company": "NextGen Software",
+      "company_id": 111,
+      "location": "Nairobi, Kenya",
+      "salary_range": "$3,000 - $3,800/month",
+      "type": "Full-time",
+      "image": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2000&auto=format&fit=crop",
+      "description": "Design and execute test plans to ensure software quality."
+    },
+    {
+      "id": 12,
+      "title": "Sales Manager",
+      "company": "Retail Corp",
+      "company_id": 112,
+      "location": "Nairobi, Kenya",
+      "salary_range": "$3,500 - $4,500/month",
+      "type": "Full-time",
+      "image": "https://images.unsplash.com/photo-1532619675605-ffecf2ff3efb?q=80&w=2000&auto=format&fit=crop",
+      "description": "Lead the sales team to achieve revenue targets."
+    },
+    {
+      "id": 13,
+      "title": "Graphic Designer",
+      "company": "Pixel Perfect",
+      "company_id": 113,
+      "location": "Mombasa, Kenya",
+      "salary_range": "$2,000 - $2,800/month",
+      "type": "Contract",
+      "image": "https://images.unsplash.com/photo-1497215842964-222b430dc094?q=80&w=2000&auto=format&fit=crop",
+      "description": "Create compelling graphics for digital and print media."
+    },
+    {
+      "id": 14,
+      "title": "HR Coordinator",
+      "company": "PeopleFirst",
+      "company_id": 114,
+      "location": "Nairobi, Kenya",
+      "salary_range": "$2,300 - $3,000/month",
+      "type": "Full-time",
+      "image": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=2000&auto=format&fit=crop",
+      "description": "Coordinate HR activities including recruitment and employee relations."
+    },
+    {
+      "id": 15,
+      "title": "Content Writer",
+      "company": "WriteRight Ltd.",
+      "company_id": 115,
+      "location": "Remote",
+      "salary_range": "$1,800 - $2,500/month",
+      "type": "Freelance",
+      "image": "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?q=80&w=2000&auto=format&fit=crop",
+      "description": "Produce engaging articles and web content for various industries."
+    },
+    {
+      "id": 16,
+      "title": "Cybersecurity Analyst",
+      "company": "SecureNet",
+      "company_id": 116,
+      "location": "Nairobi, Kenya",
+      "salary_range": "$3,800 - $5,000/month",
+      "type": "Full-time",
+      "image": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2000&auto=format&fit=crop",
+      "description": "Monitor and protect company networks from cyber threats."
+    },
+    {
+      "id": 17,
+      "title": "AI Engineer",
+      "company": "FutureTech Labs",
+      "company_id": 117,
+      "location": "Nairobi, Kenya",
+      "salary_range": "$4,500 - $6,000/month",
+      "type": "Full-time",
+      "image": "https://images.unsplash.com/photo-1532074205216-d0e1f8d3f5a9?q=80&w=2000&auto=format&fit=crop",
+      "description": "Develop AI models and machine learning algorithms for innovative projects."
+    },
+    {
+      "id": 18,
+      "title": "Business Analyst",
+      "company": "Consulting Partners",
+      "company_id": 118,
+      "location": "Nairobi, Kenya",
+      "salary_range": "$3,200 - $4,000/month",
+      "type": "Full-time",
+      "image": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2000&auto=format&fit=crop",
+      "description": "Analyze business processes and provide data-driven recommendations."
+    },
+    {
+      "id": 19,
+      "title": "Full Stack Developer",
+      "company": "CodeCraft",
+      "company_id": 119,
+      "location": "Remote",
+      "salary_range": "$3,500 - $4,800/month",
+      "type": "Full-time",
+      "image": "https://images.unsplash.com/photo-1537432376769-00a64be7d59f?q=80&w=2000&auto=format&fit=crop",
+      "description": "Build and maintain web applications using React and Node.js."
+    },
+    {
+      "id": 20,
+      "title": "Project Coordinator",
+      "company": "BuildRight",
+      "company_id": 120,
+      "location": "Nairobi, Kenya",
+      "salary_range": "$2,700 - $3,500/month",
+      "type": "Full-time",
+      "image": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=2000&auto=format&fit=crop",
+      "description": "Assist project managers in coordinating activities and timelines."
+    }
+  ],
+  "applications": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "job_id": 1,
+      "status": "pending",
+      "applied_at": "2025-06-24T09:00:00Z"
+    },
+    {
+      "id": 2,
+      "user_id": 1,
+      "job_id": 5,
+      "status": "accepted",
+      "applied_at": "2025-06-20T14:30:00Z"
+    },
+    {
+      "id": 3,
+      "user_id": 4,
+      "job_id": 3,
+      "status": "rejected",
+      "applied_at": "2025-06-22T11:00:00Z"
+    }
+  ]
+}
