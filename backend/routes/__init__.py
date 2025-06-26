@@ -1,3 +1,4 @@
+# routes/__init__.py
 def register_blueprints(app):
     from .auth_routes import auth_bp
     from .job_routes import jobs_bp
