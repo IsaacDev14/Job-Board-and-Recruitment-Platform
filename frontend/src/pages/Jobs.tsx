@@ -7,14 +7,14 @@ import type { Job } from '../types/job';
 import { FaSearch, FaMapMarkerAlt, FaDollarSign, FaBuilding, FaBriefcase } from 'react-icons/fa';
 
 interface JobsProps {
-  onNavigate: (page: string, jobId?: number) => void; // CHANGED jobId to number
+  onNavigate: (page: string, jobId?: number) => void; // Expects number for jobId
 }
 
 const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [allJobs, setAllJobs] = useState<Job[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // Corrected useState initialization
   const [isFiltering, setIsFiltering] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -115,16 +115,30 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
           <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {filteredJobs.map(job => (
               <div
-                key={job.id} // job.id is a number
+                key={job.id} 
                 className="bg-white rounded-xl shadow-md overflow-hidden transition hover:-translate-y-1 hover:shadow-lg cursor-pointer border border-gray-100"
-                onClick={() => onNavigate('job-details', job.id)} // job.id is passed as number
+                onClick={() => {
+                  const jobIdAsNumber = Number(job.id); // Explicitly convert to number
+                  console.log('Jobs.tsx: Navigating to job-details for ID:', jobIdAsNumber, 'Type:', typeof jobIdAsNumber);
+                  onNavigate('job-details', jobIdAsNumber);
+                }}
               >
-                {job.image && (
+                {/* Dynamic image for job cards with fallback */}
+                {job.image ? (
                   <img
                     src={job.image}
                     alt={job.title}
                     className="h-48 w-full object-cover"
+                    onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null; // Prevents infinite loop
+                      target.src = "https://placehold.co/400x200/ADD8E6/000000?text=Job+Listing+Image"; // Fallback placeholder
+                    }}
                   />
+                ) : (
+                  <div className="h-48 w-full bg-gray-200 flex items-center justify-center text-gray-500">
+                    No Image
+                  </div>
                 )}
                 <div className="p-5">
                   <h3 className="font-semibold text-xl text-gray-900 mb-2 leading-tight">{job.title}</h3>
@@ -148,7 +162,9 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
                     className="mt-5 w-full py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
                     onClick={e => {
                       e.stopPropagation();
-                      onNavigate('job-details', job.id); // job.id is passed as number
+                      const jobIdAsNumber = Number(job.id);
+                      console.log('Jobs.tsx (Button): Navigating to job-details for ID:', jobIdAsNumber, 'Type:', typeof jobIdAsNumber);
+                      onNavigate('job-details', jobIdAsNumber);
                     }}
                   >
                     View Details

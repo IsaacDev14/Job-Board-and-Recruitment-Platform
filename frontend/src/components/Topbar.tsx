@@ -1,66 +1,89 @@
 // src/components/Topbar.tsx
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { FaBriefcase, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaTachometerAlt, FaPlusSquare, FaListAlt, FaRegUserCircle, FaUser } from 'react-icons/fa';
 
 interface TopbarProps {
   onNavigate: (page: string) => void;
 }
 
 const Topbar: React.FC<TopbarProps> = ({ onNavigate }) => {
-  const { isAuthenticated, user, logout } = useAuth(); // User type comes from useAuth context
+  const { isAuthenticated, user, logout } = useAuth();
 
   const handleLogout = () => {
     logout();
-    onNavigate('home'); // Redirect to home after logout
+    onNavigate('login');
   };
 
   return (
-    <nav className="bg-gray-800 text-white p-4 shadow-md">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        {/* Logo/Home Button */}
-        <button
-          onClick={() => onNavigate('home')}
-          className="text-2xl font-bold text-blue-400 hover:text-blue-300 transition"
-        >
-          JobBoard Pro
+    <header className="bg-gray-900 text-white shadow-xl sticky top-0 z-50"> {/* Stronger shadow for depth */}
+      <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center py-4 px-4 sm:px-6 lg:px-8">
+        {/* Logo/Brand */}
+        <button onClick={() => onNavigate('home')} className="flex items-center space-x-2 text-2xl font-bold text-blue-400 hover:text-blue-300 transition-colors duration-200 mb-4 sm:mb-0"> {/* Adjusted size and smoother transition */}
+          <FaBriefcase className="text-blue-300" />
+          <span>JobBoardPro</span>
         </button>
 
         {/* Navigation Links */}
-        <div className="flex items-center space-x-6">
-          <button onClick={() => onNavigate('jobs')} className="hover:text-blue-300 transition">
+        <nav className="flex flex-wrap justify-center sm:justify-end items-center gap-x-5 gap-y-2 text-base"> {/* Refined gap, slightly smaller text for balance */}
+          <button onClick={() => onNavigate('jobs')} className="flex items-center font-medium px-3 py-1 rounded-md hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200">
             Jobs
           </button>
-          {isAuthenticated && user?.role === 'recruiter' && (
-            <button onClick={() => onNavigate('post-job')} className="hover:text-blue-300 transition">
-              Post Job
-            </button>
-          )}
+
           {isAuthenticated ? (
             <>
-              <button onClick={() => onNavigate('dashboard')} className="hover:text-blue-300 transition">
-                Dashboard
+              {/* Display User Name */}
+              {user?.username && (
+                <div className="flex items-center px-3 py-1 rounded-md bg-gray-800 text-blue-200 font-semibold"> {/* Cleaned up background and text color */}
+                  <FaUser className="mr-2 text-blue-300" />
+                  <span>{user.username}</span>
+                </div>
+              )}
+
+              {/* Common protected links */}
+              <button onClick={() => onNavigate('dashboard')} className="flex items-center font-medium px-3 py-1 rounded-md hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200">
+                <FaTachometerAlt className="mr-1" /> Dashboard
               </button>
-              <span className="text-gray-400">Welcome, {user?.username} ({user?.role})</span>
-              <button
-                onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition"
-              >
-                Logout
+              <button onClick={() => onNavigate('profile')} className="flex items-center font-medium px-3 py-1 rounded-md hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200">
+                <FaRegUserCircle className="mr-1" /> Profile
+              </button>
+
+              {user?.role === 'recruiter' && (
+                <>
+                  <button onClick={() => onNavigate('post-job')} className="flex items-center font-medium px-3 py-1 rounded-md hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200">
+                    <FaPlusSquare className="mr-1" /> Post Job
+                  </button>
+                  <button onClick={() => onNavigate('my-jobs')} className="flex items-center font-medium px-3 py-1 rounded-md hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200">
+                    <FaListAlt className="mr-1" /> My Jobs
+                  </button>
+                </>
+              )}
+
+              {user?.role === 'job_seeker' && (
+                <button onClick={() => onNavigate('applications')} className="flex items-center font-medium px-3 py-1 rounded-md hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200">
+                  <FaListAlt className="mr-1" /> My Applications
+                </button>
+              )}
+
+              {/* Logout button */}
+              <button onClick={handleLogout} className="flex items-center font-medium px-3 py-1 rounded-md bg-red-600 hover:bg-red-700 transition-colors duration-200 sm:ml-2"> {/* Added sm:ml-2 for spacing consistency */}
+                <FaSignOutAlt className="mr-1" /> Logout
               </button>
             </>
           ) : (
             <>
-              <button onClick={() => onNavigate('login')} className="hover:text-blue-300 transition">
-                Login
+              {/* Unauthenticated links */}
+              <button onClick={() => onNavigate('login')} className="flex items-center font-medium px-3 py-1 rounded-md hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200">
+                <FaSignInAlt className="mr-1" /> Login
               </button>
-              <button onClick={() => onNavigate('register')} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition">
-                Register
+              <button onClick={() => onNavigate('register')} className="flex items-center font-medium px-3 py-1 rounded-md hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200">
+                <FaUserPlus className="mr-1" /> Register
               </button>
             </>
           )}
-        </div>
+        </nav>
       </div>
-    </nav>
+    </header>
   );
 };
 

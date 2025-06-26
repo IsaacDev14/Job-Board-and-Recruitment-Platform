@@ -5,7 +5,7 @@ import api from '../api/api';
 import type { Job, Application } from '../types/job';
 
 interface JobDetailsProps {
-  jobId?: number; // CHANGED jobId to number
+  jobId?: number; // Expects number for jobId
   onNavigate?: (page: string) => void;
 }
 
@@ -17,22 +17,24 @@ const JobDetails: React.FC<JobDetailsProps> = ({ jobId, onNavigate }) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('JobDetails.tsx: useEffect triggered. Current jobId:', jobId, 'Type:', typeof jobId);
+
     const fetchJobData = async () => {
-      if (jobId === undefined || jobId === null) { // Check for undefined/null number
+      if (jobId === undefined || jobId === null) {
         setError("No job ID provided.");
         setLoading(false);
+        console.log('JobDetails.tsx: jobId is undefined or null. Exiting fetchJobData.');
         return;
       }
 
       setLoading(true);
       setError(null);
       try {
-        // API call should use jobId as a number
+        console.log('JobDetails.tsx: Attempting to fetch job with ID:', jobId);
         const jobResponse = await api.get<Job>(`/jobs/${jobId}`);
         setJob(jobResponse.data);
 
         if (isAuthenticated && user?.role === 'job_seeker' && user?.id) {
-          // user.id is number, jobId is number
           const applicationsResponse = await api.get<Application[]>(
             `/applications?user_id=${user.id}&job_id=${jobId}`
           );
@@ -41,7 +43,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ jobId, onNavigate }) => {
           setApplied(false);
         }
       } catch (err) {
-        console.error("Failed to fetch job details or application status:", err);
+        console.error("JobDetails.tsx: Failed to fetch job details or application status:", err);
         setError("Failed to load job details. The job might not exist or there was a network error.");
       } finally {
         setLoading(false);
@@ -67,16 +69,18 @@ const JobDetails: React.FC<JobDetailsProps> = ({ jobId, onNavigate }) => {
 
     setLoading(true);
     try {
+      console.log('JobDetails.tsx: Attempting to apply for job:', job.id, 'by user:', user.id);
       await api.post<Application>('/applications', {
-        user_id: user.id,   // user.id is number
-        job_id: job.id,     // job.id is number
+        user_id: user.id,
+        job_id: job.id,
         status: 'pending',
         applied_at: new Date().toISOString(),
       });
       setApplied(true);
       setError(null);
+      console.log('JobDetails.tsx: Successfully applied for job.');
     } catch (err) {
-      console.error("Error applying for job:", err);
+      console.error("JobDetails.tsx: Error applying for job:", err);
       setError('Failed to apply for the job. Please try again.');
     } finally {
       setLoading(false);
@@ -107,7 +111,12 @@ const JobDetails: React.FC<JobDetailsProps> = ({ jobId, onNavigate }) => {
           </button>
         )}
 
-        {job.image && <img src={job.image} alt={job.title} className="w-full h-64 object-cover rounded-lg mb-4" />}
+        {/* Static image display for JobDetails */}
+        <img 
+          src="https://placehold.co/800x400/F0F8FF/000000?text=Job+Details+Page" 
+          alt="Generic Job Details Image" 
+          className="w-full h-64 object-cover rounded-lg mb-4" 
+        />
         <h1 className="text-4xl font-bold">{job.title}</h1>
         <p className="text-lg text-gray-700">{job.company?.name}</p>
         <p className="text-gray-600">{job.location} • {job.type}</p>

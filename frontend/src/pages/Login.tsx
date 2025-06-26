@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/api';
-import type { User } from '../types/job'; // ADDED 'type' keyword
+import type { User } from '../types/job';
 
 interface LoginProps {
   onNavigate: (page: string) => void;
@@ -21,6 +21,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
     setLoading(true);
 
     try {
+      // Note: In a real application, you'd send password securely (e.g., hashed)
       const response = await api.get<User[]>(`/users?username=${username}&password=${password}`);
 
       if (response.data && response.data.length > 0) {
@@ -80,6 +81,11 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
           </button>
         </form>
         <p className="mt-6 text-center text-gray-600">
+          <button onClick={() => onNavigate('forgot-password')} className="font-medium text-blue-600 hover:text-blue-500"> {/* ADDED LINK */}
+            Forgot your password?
+          </button>
+        </p>
+        <p className="mt-2 text-center text-gray-600">
           Don't have an account?{' '}
           <button onClick={() => onNavigate('register')} className="text-blue-600 hover:underline">
             Register here

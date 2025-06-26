@@ -1,6 +1,6 @@
 // src/App.tsx
 import React, { useState } from 'react';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext'; // Ensure this import is correct
 import ProtectedRoute from './components/ProtectedRoute';
 import Topbar from './components/Topbar';
 
@@ -12,22 +12,27 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import PostJob from './pages/PostJob';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import Applications from './pages/Applications';
+import MyJobs from './pages/MyJobs';
+import Profile from './pages/Profile';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('home');
   const [selectedJobId, setSelectedJobId] = useState<number | undefined>(undefined);
 
-  // FIX: Change 'param?: number' to 'param?: number | string'
-  // This makes the handleNavigate function compatible with Home.tsx and PostJob.tsx
-  const handleNavigate = (page: string, param?: number | string) => { // MODIFIED PARAM TYPE HERE
+  const handleNavigate = (page: string, param?: number | string) => { 
+    console.log('App.tsx: handleNavigate called - Page:', page, 'Param:', param, 'Type:', typeof param);
+
     setCurrentPage(page);
     
-    // Logic for setting selectedJobId (which must be a number)
     if (page === 'job-details' && typeof param === 'number') {
       setSelectedJobId(param);
+      console.log('App.tsx: Setting selectedJobId to', param);
     } else {
-      // For all other pages, or if param is not a number for job-details, reset selectedJobId
       setSelectedJobId(undefined);
+      console.log('App.tsx: Resetting selectedJobId (or param not a number for job-details)');
     }
   };
 
@@ -48,16 +53,38 @@ const App: React.FC = () => {
         return <Login onNavigate={handleNavigate} />;
       case 'register':
         return <Register onNavigate={handleNavigate} />;
+      case 'forgot-password':
+        return <ForgotPassword onNavigate={handleNavigate} />;
+      case 'reset-password':
+        return <ResetPassword onNavigate={handleNavigate} />;
+      case 'dashboard':
+        return (
+          <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['recruiter', 'job_seeker']}>
+            <Dashboard onNavigate={handleNavigate} />
+          </ProtectedRoute>
+        );
       case 'post-job':
         return (
           <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['recruiter']}>
             <PostJob onNavigate={handleNavigate} />
           </ProtectedRoute>
         );
-      case 'dashboard':
+      case 'applications':
+        return (
+          <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['job_seeker']}>
+            <Applications onNavigate={handleNavigate} />
+          </ProtectedRoute>
+        );
+      case 'my-jobs':
+        return (
+          <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['recruiter']}>
+            <MyJobs onNavigate={handleNavigate} />
+          </ProtectedRoute>
+        );
+      case 'profile':
         return (
           <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['recruiter', 'job_seeker']}>
-            <Dashboard onNavigate={handleNavigate} />
+            <Profile onNavigate={handleNavigate} />
           </ProtectedRoute>
         );
       default:
@@ -66,9 +93,11 @@ const App: React.FC = () => {
   };
 
   return (
+    // THE <AuthProvider> MUST WRAP EVERYTHING THAT USES THE AUTH CONTEXT
     <AuthProvider>
       <div className="min-h-screen bg-gray-50 flex flex-col">
-        <Topbar onNavigate={handleNavigate} />
+        {/* Topbar is now correctly placed INSIDE AuthProvider */}
+        <Topbar onNavigate={handleNavigate} /> 
         <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 mt-6">
           {renderContent()}
         </main>

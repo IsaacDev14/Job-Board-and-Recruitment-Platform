@@ -12,14 +12,16 @@
       "username": "recruiter_bob",
       "email": "bob@example.com",
       "password": "password123",
-      "role": "recruiter"
+      "role": "recruiter",
+      "company_id": 101
     },
     {
       "id": 3,
       "username": "recruiter_techsolutions",
       "email": "techsolutions@example.com",
       "password": "password123",
-      "role": "recruiter"
+      "role": "recruiter",
+      "company_id": 101
     },
     {
       "id": 4,
@@ -33,7 +35,8 @@
       "username": "mwiti",
       "email": "mwitiisaac14@gmail.com",
       "password": "11111111",
-      "role": "recruiter"
+      "role": "recruiter",
+      "company_id": 1011
     },
     {
       "id": 6,
@@ -47,7 +50,8 @@
       "username": "fun",
       "email": "fun@gmail.com",
       "password": "1111",
-      "role": "recruiter"
+      "role": "recruiter",
+      "company_id": 1012
     },
     {
       "id": 8,
@@ -55,6 +59,21 @@
       "email": "bitt@gmail.com",
       "password": "1111",
       "role": "job_seeker"
+    },
+    {
+      "id": "c53b",
+      "username": "jobSeka1",
+      "email": "zackjacks14@gmail.com",
+      "password": "1111",
+      "role": "job_seeker"
+    },
+    {
+      "id": 259,
+      "username": "loti",
+      "email": "lotia@gmail.com",
+      "password": "1111",
+      "role": "recruiter",
+      "company_id": 1011
     }
   ],
   "companies": [
@@ -156,7 +175,7 @@
       "location": "Nairobi, Kenya",
       "salary_range": "$3,500 - $4,500/month",
       "type": "Full-time",
-      "image": "https://cdn.pixabay.com/photo/2020/01/26/20/14/computer-4795762_1280.jpg",
+      "image": "https://images.unsplash.com/photo-1549692520-acc6669e2f69?q=80&w=2000&auto=format&fit=crop",
       "description": "We are seeking an experienced Frontend Developer with strong React skills."
     },
     {
@@ -195,7 +214,6 @@
     {
       "id": 5,
       "title": "Mobile App Developer",
-      "company": "MobDev Solutions",
       "company_id": 105,
       "location": "Remote",
       "salary_range": "$2,800 - $3,800/month",
@@ -206,7 +224,6 @@
     {
       "id": 6,
       "title": "UX/UI Designer",
-      "company": "Creative Minds Studio",
       "company_id": 106,
       "location": "Nakuru, Kenya",
       "salary_range": "$2,500 - $3,500/month",
@@ -217,7 +234,6 @@
     {
       "id": 7,
       "title": "DevOps Engineer",
-      "company": "CloudTech Africa",
       "company_id": 107,
       "location": "Remote",
       "salary_range": "$3,700 - $4,700/month",
@@ -228,7 +244,6 @@
     {
       "id": 8,
       "title": "Technical Support Specialist",
-      "company": "SupportHub",
       "company_id": 108,
       "location": "Eldoret, Kenya",
       "salary_range": "$1,500 - $2,000/month",
@@ -239,7 +254,6 @@
     {
       "id": 9,
       "title": "Backend Developer",
-      "company": "WebWorks Ltd.",
       "company_id": 109,
       "location": "Nairobi, Kenya",
       "salary_range": "$3,200 - $4,200/month",
@@ -250,7 +264,6 @@
     {
       "id": 10,
       "title": "Digital Marketing Specialist",
-      "company": "MarketGurus",
       "company_id": 110,
       "location": "Kisumu, Kenya",
       "salary_range": "$2,200 - $3,000/month",
@@ -264,7 +277,7 @@
       "company": "NextGen Software",
       "company_id": 111,
       "location": "uganda",
-      "salary_range": "1000",
+      "salary_range": 1000,
       "type": "Full-time",
       "image": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2000&auto=format&fit=crop",
       "description": "make up your mind why"
@@ -272,7 +285,6 @@
     {
       "id": 12,
       "title": "Sales Manager",
-      "company": "Retail Corp",
       "company_id": 112,
       "location": "Nairobi, Kenya",
       "salary_range": "$3,500 - $4,500/month",
@@ -283,7 +295,6 @@
     {
       "id": 13,
       "title": "Graphic Designer",
-      "company": "Pixel Perfect",
       "company_id": 113,
       "location": "Mombasa, Kenya",
       "salary_range": "$2,000 - $2,800/month",
@@ -294,7 +305,6 @@
     {
       "id": 14,
       "title": "HR Coordinator",
-      "company": "PeopleFirst",
       "company_id": 114,
       "location": "Nairobi, Kenya",
       "salary_range": "$2,300 - $3,000/month",
@@ -305,7 +315,6 @@
     {
       "id": 15,
       "title": "Content Writer",
-      "company": "WriteRight Ltd.",
       "company_id": 115,
       "location": "Remote",
       "salary_range": "$1,800 - $2,500/month",
@@ -316,7 +325,6 @@
     {
       "id": 16,
       "title": "Cybersecurity Analyst",
-      "company": "SecureNet",
       "company_id": 116,
       "location": "Nairobi, Kenya",
       "salary_range": "$3,800 - $5,000/month",
@@ -327,7 +335,6 @@
     {
       "id": 17,
       "title": "AI Engineer",
-      "company": "FutureTech Labs",
       "company_id": 117,
       "location": "Nairobi, Kenya",
       "salary_range": "$4,500 - $6,000/month",
@@ -338,7 +345,6 @@
     {
       "id": 18,
       "title": "Business Analyst",
-      "company": "Consulting Partners",
       "company_id": 118,
       "location": "Nairobi, Kenya",
       "salary_range": "$3,200 - $4,000/month",
@@ -349,7 +355,6 @@
     {
       "id": 19,
       "title": "Full Stack Developer",
-      "company": "CodeCraft",
       "company_id": 119,
       "location": "Remote",
       "salary_range": "$3,500 - $4,800/month",
@@ -360,7 +365,6 @@
     {
       "id": 20,
       "title": "Project Coordinator",
-      "company": "BuildRight",
       "company_id": 120,
       "location": "Nairobi, Kenya",
       "salary_range": "$2,700 - $3,500/month",
@@ -374,9 +378,9 @@
       "company": "mwiti Co.",
       "company_id": 1011,
       "location": "kenya",
-      "salary_range": "255",
+      "salary_range": 255,
       "type": "Contract",
-      "image": "https://placehold.co/400x200?text=Job+Image",
+      "image": "https://placehold.co/400x200/F0F8FF/000000?text=Job+Image",
       "description": "very demanding ye ys"
     },
     {
@@ -384,9 +388,9 @@
       "title": "human resource",
       "company_id": 1011,
       "location": "uganda",
-      "salary_range": "1000",
+      "salary_range": 1000,
       "type": "Freelance",
-      "image": "https://placehold.co/400x200?text=Job+Image",
+      "image": "https://placehold.co/400x200/F0F8FF/000000?text=Job+Image",
       "description": "make up your mind"
     }
   ],
