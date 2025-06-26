@@ -3,9 +3,10 @@ import axios from 'axios';
 
 // Base API instance pointed to your json-server
 const api = axios.create({
-  baseURL: 'http://localhost:5000', // This MUST match the port json-server is running on
+  baseURL: ' http://127.0.0.1:5000/api', // This MUST match the port json-server is running on
   headers: {
     'Content-Type': 'application/json',
+     withCredentials: true,
   },
 });
 

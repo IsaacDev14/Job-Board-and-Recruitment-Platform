@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/api';
-import type { User } from '../types/job'; // ADDED 'type' keyword
+import type { User } from '../types/job';
 
 interface RegisterProps {
   onNavigate: (page: string) => void;
@@ -15,7 +15,7 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
   const [role, setRole] = useState<'job_seeker' | 'recruiter'>('job_seeker');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth(); // We can automatically log in after registration
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,44 +23,33 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
     setLoading(true);
 
     try {
-      // Check if username or email already exists
-      const usernameExists = await api.get<User[]>(`/users?username=${username}`);
-      if (usernameExists.data.length > 0) {
-        setError('Username already taken.');
-        setLoading(false);
-        return;
-      }
-
-      const emailExists = await api.get<User[]>(`/users?email=${email}`);
-      if (emailExists.data.length > 0) {
-        setError('Email already registered.');
-        setLoading(false);
-        return;
-      }
-
-      // If unique, register the new user
-      const newUser: Omit<User, 'id'> = { username, email, password, role };
-      const response = await api.post<User>('/users', newUser);
+      const response = await api.post<User>('/auth/register', {
+        username,
+        email,
+        password,
+        is_recruiter: role === 'recruiter',
+      });
 
       // For recruiters, also add a company entry
       if (role === 'recruiter') {
-        // Find highest company ID and increment
         const companyRes = await api.get('/companies?_sort=id&_order=desc&_limit=1');
-        const lastCompanyId = companyRes.data.length > 0 ? companyRes.data[0].id : 100; // Start from 100 if no companies
+        const lastCompanyId = companyRes.data.length > 0 ? companyRes.data[0].id : 100;
         const newCompanyId = lastCompanyId + 1;
 
         await api.post('/companies', { id: newCompanyId, name: `${username} Co.` });
       }
 
-      // Automatically log in the new user
       const registeredUser = response.data;
       const dummyToken = `dummy-jwt-${registeredUser.id}-${Date.now()}`;
       login(registeredUser, dummyToken);
 
-      onNavigate('dashboard'); // Redirect to dashboard after successful registration
-    } catch (err) {
-      console.error("Registration error:", err);
-      setError('Failed to register. Please try again.');
+      onNavigate('dashboard');
+    } catch (err: any) {
+      if (err.response?.status === 409) {
+        setError(err.response.data.message);
+      } else {
+        setError('Failed to register. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

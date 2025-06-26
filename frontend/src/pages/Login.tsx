@@ -21,14 +21,18 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
     setLoading(true);
 
     try {
-      // Note: In a real application, you'd send password securely (e.g., hashed)
-      const response = await api.get<User[]>(`/users?username=${username}&password=${password}`);
+      // Send login credentials in the request body
+      const response = await api.post<User>('/auth/login', {
+        username,
+        password,
+      });
 
-      if (response.data && response.data.length > 0) {
-        const loggedInUser = response.data[0];
+      if (response.status === 200 && response.data) {
+        const loggedInUser = response.data;
         const dummyToken = `dummy-jwt-${loggedInUser.id}-${Date.now()}`;
         login(loggedInUser, dummyToken);
-        onNavigate('dashboard');
+        // Redirect to /jobs route
+        window.location.href = '/jobs';
       } else {
         setError('Invalid username or password.');
       }
@@ -81,7 +85,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
           </button>
         </form>
         <p className="mt-6 text-center text-gray-600">
-          <button onClick={() => onNavigate('forgot-password')} className="font-medium text-blue-600 hover:text-blue-500"> {/* ADDED LINK */}
+          <button onClick={() => onNavigate('forgot-password')} className="font-medium text-blue-600 hover:text-blue-500">
             Forgot your password?
           </button>
         </p>

@@ -7,6 +7,7 @@ from flask import Blueprint
 from .user_routes import user_ns
 from .company_routes import company_ns
 from .job_routes import job_ns
+from .auth_routes import auth_ns
 
 # Create a Blueprint for the API
 api_bp = Blueprint('api', __name__, url_prefix='/api')
@@ -22,6 +23,7 @@ api = Api(api_bp,
 api.add_namespace(user_ns, path='/users')
 api.add_namespace(company_ns, path='/companies')
 api.add_namespace(job_ns, path='/jobs')
+api.add_namespace(auth_ns, path='/auth')
 
 # Note: The api_bp (Blueprint) itself will be registered with the Flask app in app/__init__.py
 # The doc parameter in Api() makes it so that Swagger UI is accessible at /api/docs
