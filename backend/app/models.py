@@ -82,6 +82,8 @@ class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(128), nullable=False)
     description = db.Column(db.Text, nullable=False)
+    job_type = db.Column(db.String(64))
+    expires_date = db.Column(db.DateTime, nullable=True)
     requirements = db.Column(db.Text)
     salary = db.Column(db.String(64)) # e.g., "70,000-90,000 USD", "Negotiable"
     location = db.Column(db.String(128))
@@ -104,6 +106,7 @@ class Job(db.Model):
             'requirements': self.requirements,
             'salary': self.salary,
             'location': self.location,
+             'job_type': self.job_type,
             'date_posted': self.date_posted.isoformat() + 'Z',
             'is_active': self.is_active,
             'company_id': self.company_id,

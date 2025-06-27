@@ -7,7 +7,7 @@ from app.models import Job, User, Company # Import Job, User, and Company models
 from sqlalchemy.exc import IntegrityError, DataError
 
 # Create a Namespace for job-related routes
-job_ns = Namespace('Jobs', description='Job listing operations')
+job_ns = Namespace('jobs', description='Job listing operations')
 
 # Define reusable models for Swagger documentation
 job_model = job_ns.model('Job', {
@@ -73,16 +73,17 @@ class JobList(Resource):
     @job_ns.marshal_list_with(job_model)
     def get(self):
         """Get all job postings with optional filters"""
+        print("all jobs init")
         args = job_list_parser.parse_args()
-        query = Job.query.join(User, Job.recruiter_id == User.id)\
-                         .join(Company, Job.company_id == Company.id)
+        query = Job.query.join(User, Job.recruiter_id == User.id)
+                        
 
         if args.get('location'):
             query = query.filter(Job.location.ilike(f"%{args['location']}%"))
         if args.get('job_type'):
             query = query.filter(Job.job_type.ilike(f"%{args['job_type']}%"))
-        if args.get('company_id'):
-            query = query.filter_by(company_id=args['company_id'])
+        # if args.get('company_id'):
+        #     query = query.filter_by(company_id=args['company_id'])
         if args.get('recruiter_id'):
             query = query.filter_by(recruiter_id=args['recruiter_id'])
 
@@ -101,18 +102,19 @@ class JobList(Resource):
     def post(self):
         """Create a new job posting"""
         data = request.get_json()
+        print("data ",data)
 
         recruiter_id = data.get('recruiter_id')
-        company_id = data.get('company_id')
+        company_id =1
 
         # Validate foreign keys
         recruiter = User.query.get(recruiter_id)
         if not recruiter or not recruiter.is_recruiter: # Ensure the user is actually a recruiter
             job_ns.abort(404, message=f"Recruiter with ID {recruiter_id} not found or is not a recruiter.")
 
-        company = Company.query.get(company_id)
-        if not company:
-            job_ns.abort(404, message=f"Company with ID {company_id} not found.")
+        # company = Company.query.get(company_id)
+        # if not company:
+        #     job_ns.abort(404, message=f"Company with ID {company_id} not found.")
 
         try:
             # Create a new Job instance from the validated data

@@ -31,6 +31,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
         const loggedInUser = response.data;
         const dummyToken = `dummy-jwt-${loggedInUser.id}-${Date.now()}`;
         login(loggedInUser, dummyToken);
+        localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser)); // Store token in localStorage
         // Redirect to /jobs route
         window.location.href = '/jobs';
       } else {

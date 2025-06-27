@@ -9,7 +9,7 @@ interface TopbarProps {
 
 const Topbar: React.FC<TopbarProps> = ({ onNavigate }) => {
   const { isAuthenticated, user, logout } = useAuth();
-
+  console.log("Topbar user:", user); // Debugging line to check user object
   const handleLogout = () => {
     logout();
     onNavigate('login');
@@ -48,7 +48,9 @@ const Topbar: React.FC<TopbarProps> = ({ onNavigate }) => {
                 <FaRegUserCircle className="mr-1" /> Profile
               </button>
 
-              {user?.role === 'recruiter' && (
+              
+
+              {user?.is_recruiter && (
                 <>
                   <button onClick={() => onNavigate('post-job')} className="flex items-center font-medium px-3 py-1 rounded-md hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200">
                     <FaPlusSquare className="mr-1" /> Post Job

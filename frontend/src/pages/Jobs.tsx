@@ -23,7 +23,7 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await api.get<Job[]>('/jobs?_expand=company');
+        const response = await api.get<Job[]>('/jobs/');
         setAllJobs(response.data);
         setFilteredJobs(response.data);
       } catch (err) {
