@@ -105,7 +105,7 @@ const PostJob: React.FC<PostJobProps> = ({ onNavigate }) => {
       console.log('Posting job payload:', newJobPayload);
 
       // Post the job
-      await api.post('/jobs', newJobPayload);
+      await api.post('/jobs/', newJobPayload);
 
       setSuccess('Job posted successfully!');
       setJobTitle('');

@@ -51,6 +51,7 @@ export interface Job {
   company_id?: number | null; // Optional
   company?: Company; // Expanded company details (if _expand=company is used)
   recruiter?: User; // Expanded recruiter details (if _expand=recruiter is used)
+  image: string; 
 }
 
 // Define the structure for an Application

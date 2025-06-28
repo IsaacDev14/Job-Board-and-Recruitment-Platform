@@ -6,48 +6,59 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 import os
 
-# Initialize extensions
-db = SQLAlchemy()
-migrate = Migrate()
-bcrypt = Bcrypt()
-jwt = JWTManager()
+# --- EXTENSIONS INITIALIZATION ---
+db = SQLAlchemy()         # For ORM/database interaction
+migrate = Migrate()       # For database migrations
+bcrypt = Bcrypt()         # For password hashing
+jwt = JWTManager()        # For JWT authentication
 
 def create_app():
+    # Create the Flask app instance
     app = Flask(__name__)
 
-    # --- APPLICATION CONFIGURATION ---
+    # --- CONFIGURATION SECTION ---
+
+    # SQLite database path inside instance folder
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.instance_path, 'jobboard.db')
+
+    # Disable unnecessary modification tracking
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # Secret keys (should ideally be set via environment variables)
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a_very_secret_key_for_development_only_12345')
     app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'super-secret-jwt-key')
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600  # 1 hour
 
+    # JWT token expiration (1 hour)
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600
+
+    # Ensure the instance folder exists
     os.makedirs(app.instance_path, exist_ok=True)
 
-    # --- INITIALIZE EXTENSIONS ---
+    # --- INITIALIZE EXTENSIONS WITH APP ---
     db.init_app(app)
     migrate.init_app(app, db)
     bcrypt.init_app(app)
     jwt.init_app(app)
 
     # --- CORS CONFIGURATION ---
+    # Allow requests from Vite dev server (localhost:5173)
     CORS(app, resources={
         r"/api/*": {
             "origins": [
-                "http://127.0.0.1:5173",  # Vite dev server
+                "http://127.0.0.1:5173",
                 "http://localhost:5173"
             ],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization"],
-            "supports_credentials": True  # ✅ Important for handling Authorization headers in preflight
+            "supports_credentials": True  # Required if using Authorization headers
         }
     })
 
-    # --- REGISTER BLUEPRINTS ---
-    from app.routes import api_bp
+    # --- REGISTER YOUR ROUTES/BLUEPRINTS ---
+    from app.routes import api_bp  # Import blueprint from your routes package
     app.register_blueprint(api_bp, url_prefix='/api')
 
-    # --- DEBUG PRINT ROUTES ---
+    # --- PRINT REGISTERED ROUTES FOR DEBUGGING ---
     print("\n--- Registered Routes ---")
     for rule in app.url_map.iter_rules():
         if str(rule.endpoint).startswith('api.'):
