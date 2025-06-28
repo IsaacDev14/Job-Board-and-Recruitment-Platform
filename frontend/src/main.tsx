@@ -1,4 +1,6 @@
 // src/main.tsx
+console.log('main.tsx: Script started executing.'); // NEW: Very early log
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';

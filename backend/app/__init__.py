@@ -3,13 +3,13 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
-from flask_jwt_extended import JWTManager # Import JWTManager
+from flask_jwt_extended import JWTManager
 import os
 
 db = SQLAlchemy()
 migrate = Migrate()
 bcrypt = Bcrypt()
-jwt = JWTManager() # Initialize JWTManager
+jwt = JWTManager()
 
 def create_app():
     app = Flask(__name__)
@@ -30,21 +30,23 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     bcrypt.init_app(app)
-    jwt.init_app(app) # Initialize JWTManager with the app
+    jwt.init_app(app)
 
-    # Configure CORS for your frontend
-    # Using CORS(app) to allow all origins for all routes during development.
-    # For production, specify origins: CORS(app, origins=["http://localhost:5173", "https://yourproductiondomain.com"])
-    CORS(app) # Broader CORS for development. If you need specific, use resources={r"/api/*": {"origins": "http://localhost:5173"}}
+    # Configure CORS explicitly for your /api/* routes
+    # IMPORTANT: Add http://localhost:5173 to origins
+    CORS(app, resources={r"/api/*": {
+        "origins": ["http://127.0.0.1:5173", "http://localhost:5173"], # Explicitly allow both origins
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }})
 
     # Import and register your API blueprint
     from app.routes import api_bp
-    app.register_blueprint(api_bp, url_prefix='/api') # Ensure blueprint is registered under /api prefix
+    app.register_blueprint(api_bp, url_prefix='/api')
 
     # --- DEBUGGING: PRINT REGISTERED ROUTES ON STARTUP ---
     print("\n--- Registered Routes (Flask app.url_map) ---")
     for rule in app.url_map.iter_rules():
-        # Only print routes belonging to your 'api' blueprint for clarity
         if str(rule.endpoint).startswith('api.'):
             methods = ', '.join(sorted(rule.methods - {'HEAD', 'OPTIONS'}))
             print(f"Endpoint: {rule.endpoint}, Methods: {methods}, Path: {rule.rule}")

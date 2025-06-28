@@ -1,7 +1,5 @@
-// src/App.tsx
-import React, { useState } from 'react';
-import { AuthProvider } from './context/AuthProvider';
-import { useAuth } from './context/useAuth';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth } from './context/useAuth'; // ✅ Access authentication state
 import ProtectedRoute from './components/ProtectedRoute';
 import Topbar from './components/Topbar';
 
@@ -11,39 +9,88 @@ import Jobs from './pages/Jobs';
 import JobDetails from './pages/JobDetails';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard'; // This is your generic job seeker dashboard
+import JobSeekerDashboard from './pages/JobSeekerDashboard';
 import PostJob from './pages/PostJob';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import Applications from './pages/Applications'; // For job seekers
-import MyJobs from './pages/MyJobs'; // This is your recruiter's "dashboard"
+import Applications from './pages/Applications';
+import MyJobs from './pages/MyJobs';
 import Profile from './pages/Profile';
-// import SavedJobs from './pages/SavedJobs'; // Uncomment if you have this page
-// import AdminDashboard from './pages/AdminDashboard'; // Uncomment if you have this page
 
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState('home');
+  // Debug log
+  console.log('App.tsx: Component rendering start.');
+
+  // Page navigation state
+  const [currentPage, setCurrentPage] = useState<string>('home');
   const [selectedJobId, setSelectedJobId] = useState<number | undefined>(undefined);
 
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  // Track if we've navigated after authentication
+  const [hasNavigatedAfterAuth, setHasNavigatedAfterAuth] = useState(false);
 
-  const handleNavigate = (page: string, param?: number | string) => {
-    console.log('App.tsx: handleNavigate called - Requesting Page:', page, 'Param:', param, 'Type:', typeof param); // Debug log
+  // Pull user/auth state from context
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  console.log(`App.tsx: useAuth values - isAuthenticated: ${isAuthenticated}, user:`, user, `authLoading: ${authLoading}`);
+
+  // Handle page navigation
+  const handleNavigate = useCallback((page: string, param?: number | string) => {
+    console.log('App.tsx: Navigating to:', page, 'Param:', param);
     setCurrentPage(page);
+
+    if (page === 'login' || page === 'register' || page === 'home') {
+      setHasNavigatedAfterAuth(false); // Reset post-login redirect
+    }
+
+    // Set job ID if going to job-details
     if (page === 'job-details' && typeof param === 'number') {
       setSelectedJobId(param);
-      console.log('App.tsx: Setting selectedJobId to', param);
     } else {
       setSelectedJobId(undefined);
-      console.log('App.tsx: Resetting selectedJobId (or param not a number for job-details)');
     }
-  };
+  }, []);
 
+  // Automatically redirect after authentication
+  useEffect(() => {
+    console.log(`App.tsx useEffect: isAuthenticated: ${isAuthenticated}, user: ${user?.username ?? 'null'}, authLoading: ${authLoading}, hasNavigatedAfterAuth: ${hasNavigatedAfterAuth}`);
+
+    if (authLoading) return; // Wait until auth status is resolved
+
+    if (!hasNavigatedAfterAuth) {
+      if (isAuthenticated && user) {
+        // ✅ Authenticated — decide where to redirect user based on role
+        let targetPage: string;
+
+        if (user.role === 'recruiter') {
+          targetPage = 'my-jobs';
+        } else if (user.role === 'job_seeker') {
+          targetPage = 'dashboard';
+        } else {
+          targetPage = 'home';
+        }
+
+        if (currentPage !== targetPage) {
+          console.log(`App.tsx: Redirecting to ${targetPage}`);
+          handleNavigate(targetPage);
+        }
+
+        setHasNavigatedAfterAuth(true);
+      } else {
+        // ❌ Not authenticated — redirect from protected pages to login
+        const protectedRoutes = ['dashboard', 'my-jobs', 'job-details', 'profile', 'applications', 'post-job'];
+        if (protectedRoutes.includes(currentPage)) {
+          console.log(`App.tsx: Redirecting to login from protected route: ${currentPage}`);
+          handleNavigate('login');
+        }
+
+        setHasNavigatedAfterAuth(false);
+      }
+    }
+  }, [isAuthenticated, user, authLoading, currentPage, handleNavigate, hasNavigatedAfterAuth]);
+
+  // Renders pages based on currentPage state
   const renderContent = () => {
-    console.log(`App.tsx: renderContent - Current Page: ${currentPage}, Is Authenticated: ${isAuthenticated}, User Role: ${user?.role}, Auth Loading: ${authLoading}`); // Debug log
-
     if (authLoading) {
-      console.log("App.tsx: renderContent - Auth is still loading, showing spinner."); // Debug log
+      // Show spinner while auth state is loading
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center">
@@ -54,117 +101,78 @@ const App: React.FC = () => {
       );
     }
 
+    // Render content based on current page
     switch (currentPage) {
       case 'home':
-        console.log("App.tsx: renderContent - Rendering Home page."); // Debug log
         return <Home onNavigate={handleNavigate} />;
       case 'jobs':
-        console.log("App.tsx: renderContent - Rendering Jobs page."); // Debug log
         return <Jobs onNavigate={handleNavigate} />;
-      case 'job-details': {
-        console.log("App.tsx: renderContent - Rendering JobDetails page."); // Debug log
+      case 'job-details':
         return selectedJobId !== undefined ? (
           <JobDetails jobId={selectedJobId} onNavigate={handleNavigate} />
         ) : (
           <p className="text-center py-10 text-red-600">Job ID not provided.</p>
         );
-      }
       case 'login':
-        console.log("App.tsx: renderContent - Rendering Login page."); // Debug log
         return <Login onNavigate={handleNavigate} />;
       case 'register':
-        console.log("App.tsx: renderContent - Rendering Register page."); // Debug log
         return <Register onNavigate={handleNavigate} />;
       case 'forgot-password':
-        console.log("App.tsx: renderContent - Rendering ForgotPassword page."); // Debug log
         return <ForgotPassword onNavigate={handleNavigate} />;
       case 'reset-password':
-        console.log("App.tsx: renderContent - Rendering ResetPassword page."); // Debug log
         return <ResetPassword onNavigate={handleNavigate} />;
 
-      case 'dashboard': // This case now acts as a router for dashboards
-        console.log(`App.tsx: renderContent - Navigating to Dashboard logic. Is Authenticated: ${isAuthenticated}, User Role: ${user?.role}`); // Debug log
-        if (!isAuthenticated) {
-          console.log("App.tsx: renderContent - Dashboard: Not authenticated, redirecting to Login."); // Debug log
-          return <Login onNavigate={handleNavigate} />;
-        }
-        if (user?.role === 'recruiter') {
-          console.log("App.tsx: renderContent - Dashboard: User is Recruiter, rendering MyJobs."); // Debug log
-          return (
-            <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['recruiter']}>
-              <MyJobs onNavigate={handleNavigate} />
-            </ProtectedRoute>
-          );
-        } else if (user?.role === 'job_seeker') {
-          console.log("App.tsx: renderContent - Dashboard: User is Job Seeker, rendering Dashboard."); // Debug log
-          return (
-            <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['job_seeker']}>
-              <Dashboard onNavigate={handleNavigate} />
-            </ProtectedRoute>
-          );
-        } else {
-          console.log("App.tsx: renderContent - Dashboard: Unknown user role or role not set, showing access denied."); // Debug log
-          return <p className="text-center py-10 text-red-600">Access Denied: Unknown role.</p>;
-        }
+      case 'dashboard':
+        return (
+          <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['job_seeker']}>
+            <JobSeekerDashboard onNavigate={handleNavigate} />
+          </ProtectedRoute>
+        );
 
       case 'post-job':
-        console.log("App.tsx: renderContent - Rendering PostJob page."); // Debug log
         return (
           <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['recruiter']}>
             <PostJob onNavigate={handleNavigate} />
           </ProtectedRoute>
         );
-      case 'applications': // Job seeker's applications
-        console.log("App.tsx: renderContent - Rendering Applications page."); // Debug log
+
+      case 'applications':
         return (
           <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['job_seeker']}>
             <Applications onNavigate={handleNavigate} />
           </ProtectedRoute>
         );
-      case 'my-jobs': // Recruiter's specific dashboard
-        console.log("App.tsx: renderContent - Rendering MyJobs page."); // Debug log
+
+      case 'my-jobs':
         return (
           <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['recruiter']}>
             <MyJobs onNavigate={handleNavigate} />
           </ProtectedRoute>
         );
+
       case 'profile':
-        console.log("App.tsx: renderContent - Rendering Profile page."); // Debug log
         return (
           <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['recruiter', 'job_seeker', 'admin']}>
             <Profile onNavigate={handleNavigate} />
           </ProtectedRoute>
         );
-      // case 'saved-jobs': // Uncomment and add if you have this page
-      //   return (
-      //     <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['job_seeker']}>
-      //       <SavedJobs onNavigate={handleNavigate} />
-      //     </ProtectedRoute>
-      //   );
-      // case 'admin-dashboard': // Uncomment and add if you have this page
-      //   return (
-      //     <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['admin']}>
-      //       <AdminDashboard onNavigate={handleNavigate} />
-      //     </ProtectedRoute>
-      //   );
+
       default:
-        console.log("App.tsx: renderContent - Rendering default Home page."); // Debug log
         return <Home onNavigate={handleNavigate} />;
     }
   };
 
+  // Final JSX return (AuthProvider removed — now handled in main.tsx)
   return (
-    <AuthProvider>
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <Topbar onNavigate={handleNavigate} />
-        <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 mt-16">
-          {renderContent()}
-        </main>
-        <footer className="bg-gray-900 text-gray-300 py-6 text-center mt-auto">
-          <p>&copy; {new Date().getFullYear()} Job Board Pro. All rights reserved.</p>
-        </footer>
-      </div>
-    </AuthProvider>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Topbar onNavigate={handleNavigate} />
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 mt-16">
+        {renderContent()}
+      </main>
+      <footer className="bg-gray-900 text-gray-300 py-6 text-center mt-auto">
+        <p>&copy; {new Date().getFullYear()} Job Board Pro. All rights reserved.</p>
+      </footer>
+    </div>
   );
 };
 

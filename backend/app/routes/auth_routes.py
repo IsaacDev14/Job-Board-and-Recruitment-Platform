@@ -69,7 +69,8 @@ class UserRegister(Resource):
             db.session.add(new_user)
             db.session.commit()
 
-            access_token = create_access_token(identity=new_user.id)
+            # Fix: Convert user.id to string for JWT identity
+            access_token = create_access_token(identity=str(new_user.id))
 
             # Prepare user data to match frontend's BackendUser structure
             user_data_for_response = {
@@ -112,7 +113,8 @@ class UserLogin(Resource):
             user = User.query.filter_by(username=username).first()
 
         if user and user.authenticate(password):
-            access_token = create_access_token(identity=user.id)
+            # Fix: Convert user.id to string for JWT identity
+            access_token = create_access_token(identity=str(user.id))
 
             company_id = None
             if user.is_recruiter and user.companies:
@@ -142,8 +144,9 @@ class CurrentUser(Resource):
     @auth_ns.marshal_with(user_payload_model) # Returns just the user payload, not the full login response
     def get(self):
         """Get details of the currently authenticated user"""
-        user_id = get_jwt_identity() # Get the user's ID from the JWT
-        user = User.query.get(user_id)
+        # get_jwt_identity() will now return a string (the user ID)
+        user_id_str = get_jwt_identity()
+        user = User.query.get(int(user_id_str)) # Convert back to int to query the database
 
         if user:
             company_id = None

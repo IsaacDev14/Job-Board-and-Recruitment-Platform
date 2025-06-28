@@ -1,6 +1,6 @@
 // src/pages/Register.tsx
 import React, { useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../context/useAuth'; // Correct import path for useAuth
 import api from '../api/api';
 import type { LoginResponse } from '../types/job';
 import axios, { AxiosError } from 'axios'; // Import axios itself
@@ -11,7 +11,7 @@ function isAxiosError(error: unknown): error is AxiosError {
 }
 
 interface RegisterProps {
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, param?: number | string) => void; // Updated to match App.tsx's handleNavigate
 }
 
 const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
@@ -20,12 +20,14 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'job_seeker' | 'recruiter'>('job_seeker');
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null); // New state for success message
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccessMessage(null); // Clear previous messages
     setLoading(true);
 
     try {
@@ -40,7 +42,10 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
 
       const { user: registeredBackendUser, access_token } = response.data;
 
-      login(registeredBackendUser, access_token); // Log in the user immediately
+      // Log in the user immediately in AuthContext
+      // Note: For registration, you might choose to redirect to login page
+      // without auto-logging in, but current flow logs in.
+      login(registeredBackendUser, access_token);
 
       // For recruiters, attempt to create a default company entry
       if (role === 'recruiter') {
@@ -69,22 +74,30 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
         }
       }
 
-      onNavigate('dashboard');
+      setSuccessMessage('Registration successful! Redirecting to login...');
+      // Redirect to login page after successful registration
+      // Add a small delay to allow user to see the success message
+      setTimeout(() => {
+        onNavigate('login'); // Redirect to login after successful registration
+      }, 1500); // 1.5 second delay
 
     } catch (err: unknown) {
       let errorMessage = "Failed to register. Please try again.";
       console.error("Registration error:", err);
 
       if (isAxiosError(err)) {
-        if (err.response && err.response.data && typeof err.response.data === 'object') {
-          const responseData = err.response.data as { message?: string };
-          if (responseData.message && typeof responseData.message === 'string') {
-            errorMessage = responseData.message;
+        if (err.response) {
+          console.error("Register.tsx: Axios error response:", err.response); // Log Axios response
+          if (err.response.data && typeof err.response.data === 'object') {
+            const responseData = err.response.data as { message?: string };
+            if (responseData.message && typeof responseData.message === 'string') {
+              errorMessage = responseData.message;
+            } else {
+              errorMessage = `Failed to register: ${err.message || 'Server responded with unexpected data.'}`;
+            }
           } else {
-            errorMessage = `Failed to register: ${err.message || 'Server responded with unexpected data.'}`;
+            errorMessage = `Failed to register: ${err.message || 'Network error or server unreachable.'}`;
           }
-        } else {
-          errorMessage = `Failed to register: ${err.message || 'Network error or server unreachable.'}`;
         }
       } else if (err instanceof Error) {
         errorMessage = `Failed to register: ${err.message}`;
@@ -156,6 +169,12 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
             </select>
           </div>
           {error && <p className="text-red-500 text-sm whitespace-pre-line">{error}</p>}
+          {successMessage && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+              <strong className="font-bold">Success!</strong>
+              <span className="block sm:inline"> {successMessage}</span>
+            </div>
+          )}
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"

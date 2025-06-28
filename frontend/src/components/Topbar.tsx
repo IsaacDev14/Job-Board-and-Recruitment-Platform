@@ -5,7 +5,7 @@ import { LogOut, Home, Briefcase, User, Heart, Settings, PlusCircle, LayoutDashb
 import { FaBars, FaTimes } from 'react-icons/fa';
 
 interface TopbarProps {
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, param?: number | string) => void; // Updated to match App.tsx's handleNavigate
 }
 
 const Topbar: React.FC<TopbarProps> = ({ onNavigate }) => {
@@ -16,8 +16,8 @@ const Topbar: React.FC<TopbarProps> = ({ onNavigate }) => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const handleNavLinkClick = (page: string) => {
-    onNavigate(page);
+  const handleNavLinkClick = (page: string, param?: number | string) => {
+    onNavigate(page, param);
     setIsMobileMenuOpen(false); // Close menu on navigation
   };
 

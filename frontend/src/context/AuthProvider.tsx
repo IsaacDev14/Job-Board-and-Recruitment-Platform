@@ -1,10 +1,10 @@
 // src/context/AuthProvider.tsx
 import React, { useState, useEffect, useCallback } from 'react';
-import type { ReactNode } from 'react'; // CORRECTED: type-only import for ReactNode
+import type { ReactNode } from 'react'; // Corrected: Use 'import type' for ReactNode
 import api from '../api/api'; // Your API client instance
-// Import AuthContext (value) and type AuthContextType (type) from the dedicated object file
+// Corrected import: Import AuthContext as a value, AuthContextType as a type
 import { AuthContext } from './AuthContextObject';
-import type { AuthContextType } from './AuthContextObject'; // CORRECTED: type-only import for AuthContextType
+import type { AuthContextType } from './AuthContextObject'; // Corrected: Use 'import type' for AuthContextType
 import type { User, BackendUser } from '../types/job'; // Import specific types
 
 /**
@@ -16,7 +16,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // Start as true for initial check
+  console.log(`AuthProvider Render: isLoading=${isLoading}, isAuthenticated=${isAuthenticated}, user=`, currentUser);
 
   /**
    * Transforms raw user data received from the backend into the frontend's `User` type.
@@ -45,12 +46,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
    * Wrapped in `useCallback` for stability across renders.
    */
   const logout = useCallback(() => {
+    console.log("AuthContext: Initiating logout.");
     localStorage.removeItem('token');
     setCurrentUser(null);
     setToken(null);
     setIsAuthenticated(false);
+    setIsLoading(false); // Ensure loading is false after logout
     delete api.defaults.headers.common['Authorization']; // Clear Axios default header
-    console.log("AuthContext: User logged out.");
+    console.log("AuthContext: User logged out successfully.");
   }, []); // No dependencies, so this function's reference is stable
 
   /**
@@ -59,38 +62,58 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
    * Dependencies are `logout` and `transformBackendUser` (both stable `useCallback` functions).
    */
   useEffect(() => {
+    let isMounted = true; // Flag to prevent state updates on unmounted component
+    console.log("AuthProvider useEffect: Running initial auth check.");
+
     const loadUserFromBackendOrStorage = async () => {
+      console.log("AuthProvider: loadUserFromBackendOrStorage started. Setting isLoading to true.");
       setIsLoading(true);
       try {
         const storedToken = localStorage.getItem('token');
         if (storedToken) {
           api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+          console.log("AuthProvider: Token found, attempting to fetch current user.");
           // Fetch current user data from the backend to validate token and get fresh data
           const response = await api.get<BackendUser>('/current_user');
           const backendUserData = response.data;
 
-          const transformedUser = transformBackendUser(backendUserData);
-          setCurrentUser(transformedUser);
-          setToken(storedToken);
-          setIsAuthenticated(true);
-          console.log("AuthContext: User loaded and transformed from backend/token:", transformedUser);
+          if (isMounted) { // Check if component is still mounted before setting state
+            const transformedUser = transformBackendUser(backendUserData);
+            setCurrentUser(transformedUser);
+            setToken(storedToken);
+            setIsAuthenticated(true);
+            console.log("AuthContext: User loaded and transformed from backend/token:", transformedUser);
+          }
         } else {
+          console.log("AuthProvider: No token found in localStorage. Resetting auth states.");
           // No token found, ensure all states are reset
-          setCurrentUser(null);
-          setToken(null);
-          setIsAuthenticated(false);
-          localStorage.removeItem('token'); // Just in case there was a stale, empty token
+          if (isMounted) {
+            setCurrentUser(null);
+            setToken(null);
+            setIsAuthenticated(false);
+            localStorage.removeItem('token'); // Just in case there was a stale, empty token
+          }
         }
       } catch (error) {
         console.error("AuthContext: Failed to load user or validate token:", error);
-        // If API call fails (e.g., token expired, network error), force logout
-        logout();
+        if (isMounted) { // Check if component is still mounted before setting state
+            logout(); // Force logout on error
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) { // Always set to false after the initial load attempt
+            setIsLoading(false);
+            console.log("AuthProvider: loadUserFromBackendOrStorage finished. Setting isLoading to false.");
+        }
       }
     };
 
     loadUserFromBackendOrStorage();
+
+    return () => {
+        isMounted = false; // Cleanup: set flag to false when component unmounts
+        console.log("AuthProvider useEffect Cleanup: isMounted set to false.");
+    };
+
   }, [logout, transformBackendUser]); // Dependencies: logout and transformBackendUser are stable callbacks
 
   /**
@@ -109,6 +132,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsAuthenticated(true);
     api.defaults.headers.common['Authorization'] = `Bearer ${userToken}`; // Set Axios header
     console.log("AuthContext: User logged in and transformed:", transformedUser);
+    setIsLoading(false); // Explicitly set isLoading to false after a successful login
   }, [transformBackendUser]); // Dependency: transformBackendUser is a stable callback
 
   /**
@@ -122,10 +146,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (newUser === null) {
       localStorage.removeItem('token'); // Clear token if user is explicitly set to null
       setIsAuthenticated(false);
+      setIsLoading(false); // Ensure loading is false if user is set to null
     }
-    // Note: If you update user data via API (e.g., profile update),
-    // you might want to also update the `user` item in localStorage if you store it,
-    // but relying on /current_user on load is generally more robust.
   }, []); // No dependencies, so this function's reference is stable
 
   // The value provided to consumers of this context

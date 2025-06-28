@@ -1,64 +1,73 @@
 // src/types/job.ts
 
+// Define the structure for a User
 export interface User {
-  id: string | number;
-  username: string;
-  email: string;
-  role: 'job_seeker' | 'recruiter' | 'admin' | 'guest';
-  company_id?: number | null;
-  is_recruiter?: boolean; // Important for reconciliation with backend
-}
-
-export interface BackendUser {
-  id: string | number;
+  id: number;
   username: string;
   email: string;
   is_recruiter: boolean;
-  company_id?: number | null;
-  // date_joined?: string; // Optional if your backend sends it
+  role: 'job_seeker' | 'recruiter' | 'admin'; // Derived role for frontend
+  company_id?: number | null; // Optional, for recruiters
 }
 
+// Define the structure for a BackendUser (as received from login/current_user endpoints)
+// This might be slightly different from the frontend User type, especially for role derivation.
+export interface BackendUser {
+  id: number;
+  username: string;
+  email: string;
+  is_recruiter: boolean;
+  // Add other backend fields if they exist and are relevant
+  company_id?: number | null;
+}
+
+// Define the structure for a Company
 export interface Company {
   id: number;
   name: string;
   industry?: string;
-  location?: string;
   description?: string;
-  image?: string;
+  contact_email?: string;
+  website?: string;
+  date_registered: string; // ISO 8601 string
+  owner_id: number;
 }
 
+// Define the structure for a Job
 export interface Job {
   id: number;
   title: string;
-  company_id: number;
-  company?: Company;
-  location: string;
-  salary_range: string;
-  type: 'Full-time' | 'Part-time' | 'Contract' | 'Freelance' | 'Internship';
-  image?: string;
   description: string;
+  requirements?: string;
+  location: string;
+  salary: string; // Backend uses 'salary'
+  salary_range: string; // Frontend uses 'salary_range' for display
+  job_type: 'Full-time' | 'Part-time' | 'Contract' | 'Freelance' | 'Internship' | string; // Backend uses 'job_type'
+  type: 'Full-time' | 'Part-time' | 'Contract' | 'Freelance' | 'Internship' | string; // Frontend uses 'type' for display
+  date_posted: string; // ISO 8601 string
+  expires_date?: string | null; // ISO 8601 string, optional
+  is_active: boolean;
+  recruiter_id: number;
+  company_id?: number | null; // Optional
+  company?: Company; // Expanded company details (if _expand=company is used)
+  recruiter?: User; // Expanded recruiter details (if _expand=recruiter is used)
 }
 
+// Define the structure for an Application
 export interface Application {
   id: number;
-  user_id: string | number;
+  user_id: number;
   job_id: number;
-  status: 'pending' | 'accepted' | 'rejected';
-  applied_at: string;
-  job?: Job;
-  user?: User;
+  application_date: string; // ADDED: ISO 8601 string for application date
+  status: 'pending' | 'reviewed' | 'accepted' | 'rejected' | string;
+  resume_url?: string | null;
+  cover_letter_text?: string | null;
+  job?: Job; // Expanded job details (if _expand=job is used)
+  applicant?: User; // Expanded applicant details (if _expand=applicant is used)
 }
 
-export interface DashboardStats {
-  totalJobs: number;
-  totalApplications: number;
-  openJobs: number;
-  pendingApplications: number;
-  acceptedApplications: number;
-  rejectedApplications: number;
-}
-
+// Define the structure for a Login Response (from backend)
 export interface LoginResponse {
   access_token: string;
-  user: BackendUser;
+  user: BackendUser; // The raw user data from the backend
 }
