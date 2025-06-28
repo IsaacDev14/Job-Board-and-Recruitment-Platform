@@ -11,13 +11,11 @@ export interface User {
 }
 
 // Define the structure for a BackendUser (as received from login/current_user endpoints)
-// This might be slightly different from the frontend User type, especially for role derivation.
 export interface BackendUser {
   id: number;
   username: string;
   email: string;
   is_recruiter: boolean;
-  // Add other backend fields if they exist and are relevant
   company_id?: number | null;
 }
 
@@ -43,16 +41,20 @@ export interface Job {
   location: string;
   salary: string; // Backend uses 'salary'
   salary_range: string; // Frontend uses 'salary_range' for display
-  job_type: 'Full-time' | 'Part-time' | 'Contract' | 'Freelance' | 'Internship' | string; // Backend uses 'job_type'
-  type: 'Full-time' | 'Part-time' | 'Contract' | 'Freelance' | 'Internship' | string; // Frontend uses 'type' for display
+  job_type: 'Full-time' | 'Part-time' | 'Contract' | 'Freelance' | 'Internship' | string;
+  type: 'Full-time' | 'Part-time' | 'Contract' | 'Freelance' | 'Internship' | string;
   date_posted: string; // ISO 8601 string
   expires_date?: string | null; // ISO 8601 string, optional
   is_active: boolean;
   recruiter_id: number;
-  company_id?: number | null; // Optional
+  company_id?: number | null;
   company?: Company; // Expanded company details (if _expand=company is used)
   recruiter?: User; // Expanded recruiter details (if _expand=recruiter is used)
-  image: string; 
+  image: string;
+
+  // ✅ Added for dashboard support
+  applications: number; // Number of applications received
+  status?: 'Active' | 'Closed' | string; // Posting status
 }
 
 // Define the structure for an Application
@@ -60,16 +62,16 @@ export interface Application {
   id: number;
   user_id: number;
   job_id: number;
-  application_date: string; // ADDED: ISO 8601 string for application date
+  application_date: string; // ISO 8601 string for application date
   status: 'pending' | 'reviewed' | 'accepted' | 'rejected' | string;
   resume_url?: string | null;
   cover_letter_text?: string | null;
-  job?: Job; // Expanded job details (if _expand=job is used)
-  applicant?: User; // Expanded applicant details (if _expand=applicant is used)
+  job?: Job; // Expanded job details
+  applicant?: User; // Expanded applicant details
 }
 
 // Define the structure for a Login Response (from backend)
 export interface LoginResponse {
   access_token: string;
-  user: BackendUser; // The raw user data from the backend
+  user: BackendUser;
 }
