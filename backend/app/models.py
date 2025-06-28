@@ -89,3 +89,26 @@ class Application(db.Model):
 
     def __repr__(self):
         return f'<Application {self.id} by User {self.user_id} for Job {self.job_id}>'
+    
+class SavedJob(db.Model):
+    __tablename__ = 'saved_jobs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    job_id = db.Column(db.Integer, db.ForeignKey('jobs.id'), nullable=False)
+    saved_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationships (optional backrefs)
+    user = db.relationship('User', backref='saved_jobs', lazy=True)
+    job = db.relationship('Job', backref='saved_by_users', lazy=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "job_id": self.job_id,
+            "saved_at": self.saved_at.isoformat()
+        }
+
+    def __repr__(self):
+        return f'<SavedJob User={self.user_id} Job={self.job_id}>'

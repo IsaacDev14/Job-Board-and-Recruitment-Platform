@@ -1,3 +1,5 @@
+# app/__init__.py
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -41,16 +43,15 @@ def create_app():
     jwt.init_app(app)
 
     # --- CORS CONFIGURATION ---
-    # Allow requests from Vite dev server (localhost:5173)
-    CORS(app, resources={
+    # Allow requests from your frontend at localhost:5173
+    CORS(app, supports_credentials=True, resources={
         r"/api/*": {
             "origins": [
-                "http://127.0.0.1:5173",
-                "http://localhost:5173"
+                "http://localhost:5173",
+                "http://127.0.0.1:5173"
             ],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization"],
-            "supports_credentials": True  # Required if using Authorization headers
+            "allow_headers": ["Content-Type", "Authorization"]
         }
     })
 

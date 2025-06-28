@@ -29,6 +29,7 @@ export interface Company {
   description?: string;
   contact_email?: string;
   website?: string;
+  location?: string;
   date_registered: string; // ISO 8601 string
   owner_id: number;
 }
