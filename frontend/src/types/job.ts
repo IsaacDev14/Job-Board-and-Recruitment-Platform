@@ -1,55 +1,75 @@
 // src/types/job.ts
 
-// Define the User type
+// Define the structure for a User
 export interface User {
-  id: string | number; // IDs can be numbers (json-server auto-generates them as numbers if not specified, but strings are common too)
+  id: number;
   username: string;
   email: string;
-  password?: string; // Optional for safety, not sent to frontend usually
-  role: 'job_seeker' | 'recruiter' | 'admin';
-  company_id?: number; // <--- ADDED THIS LINE: Optional, for recruiters
+  is_recruiter: boolean;
+  role: 'job_seeker' | 'recruiter' | 'admin'; // Derived role for frontend
+  company_id?: number | null; // Optional, for recruiters
 }
 
-// Define the Company type
+// Define the structure for a BackendUser (as received from login/current_user endpoints)
+// This might be slightly different from the frontend User type, especially for role derivation.
+export interface BackendUser {
+  id: number;
+  username: string;
+  email: string;
+  is_recruiter: boolean;
+  // Add other backend fields if they exist and are relevant
+  company_id?: number | null;
+}
+
+// Define the structure for a Company
 export interface Company {
-  id: number; // Ensure this is consistently a number
+  id: number;
   name: string;
-  industry?: string; // Optional fields
-  location?: string;
+  industry?: string;
   description?: string;
-  image?: string;
+  contact_email?: string;
+  website?: string;
+  location?: string;
+  date_registered: string; // ISO 8601 string
+  owner_id: number;
 }
 
-// Define the Job type
+// Define the structure for a Job
 export interface Job {
   id: number;
   title: string;
-  company_id: number; // Link to Company ID
-  company?: Company; // Expanded company object (optional, depends on _expand in API)
-  location: string;
-  salary_range: string | number; // Allow flexible salary range
-  type: 'Full-time' | 'Part-time' | 'Contract' | 'Freelance' | 'Internship';
-  image?: string;
   description: string;
+  requirements?: string;
+  location: string;
+  salary: string; // Backend uses 'salary'
+  salary_range: string; // Frontend uses 'salary_range' for display
+  job_type: 'Full-time' | 'Part-time' | 'Contract' | 'Freelance' | 'Internship' | string; // Backend uses 'job_type'
+  type: 'Full-time' | 'Part-time' | 'Contract' | 'Freelance' | 'Internship' | string; // Frontend uses 'type' for display
+  date_posted: string; // ISO 8601 string
+  expires_date?: string | null; // ISO 8601 string, optional
+  is_active: boolean;
+  recruiter_id: number;
+  company_id?: number | null; // Optional
+  company?: Company; // Expanded company details (if _expand=company is used)
+  recruiter?: User; // Expanded recruiter details (if _expand=recruiter is used)
+  image: string; 
 }
 
-// Define the Application type
+// Define the structure for an Application
 export interface Application {
   id: number;
-  user_id: string | number; // Link to User ID
-  job_id: number; // Link to Job ID
-  status: 'pending' | 'accepted' | 'rejected';
-  applied_at: string; // ISO 8601 string for date/time
-  job?: Job; // Expanded job object (optional, depends on _expand in API)
-  user?: User; // Expanded user object (optional, depends on _expand in API)
+  user_id: number;
+  job_id: number;
+  application_date: string; // ADDED: ISO 8601 string for application date
+  status: 'pending' | 'reviewed' | 'accepted' | 'rejected' | string;
+  resume_url?: string | null;
+  cover_letter_text?: string | null;
+  job?: Job; // Expanded job details (if _expand=job is used)
+  applicant?: User; // Expanded applicant details (if _expand=applicant is used)
 }
 
-// Define data for the dashboard statistics
-export interface DashboardStats {
-  totalJobs: number;
-  totalApplications: number;
-  openJobs: number; // for recruiters
-  pendingApplications: number; // for recruiters/job seekers
-  acceptedApplications: number; // for job seekers
-  rejectedApplications: number; // for job seekers
+// Define the structure for a Login Response (from backend)
+export interface LoginResponse {
+  access_token: string;
+  user: BackendUser; // The raw user data from the backend
 }

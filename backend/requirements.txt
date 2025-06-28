@@ -1,9 +1,0 @@
-flask
-flask-sqlalchemy
-flask-migrate
-flask-jwt-extended
-flask-cors
-werkzeug
-python-dotenv
-bcrypt
-psycopg2-binary  # Added for PostgreSQL connectivity

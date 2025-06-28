@@ -1,6 +1,9 @@
 // src/pages/ResetPassword.tsx
 import React, { useState, useEffect } from 'react';
 // Assuming onNavigate is passed from App.tsx for navigation
+// For a real app, you'd import your API utility (e.g., api from '../api/api')
+// import api from '../api/api';
+
 interface ResetPasswordProps {
   onNavigate: (page: string) => void;
   // In a real app, this would take a token from URL params, e.g., token?: string;
@@ -20,12 +23,18 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ onNavigate }) => {
   useEffect(() => {
     // Simulate token validation check (e.g., on component mount)
     // For json-server, this is purely illustrative.
-    const tokenFromUrl = window.location.search.split('token=')[1];
-    if (!tokenFromUrl || tokenFromUrl.length < 10) { // Basic mock check
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenFromUrl = urlParams.get('token');
+
+    if (!tokenFromUrl || tokenFromUrl.length < 10) { // Basic mock check for token presence/length
       setIsValidToken(false);
-      setError("Invalid or missing password reset token.");
+      setError("Invalid or missing password reset token. Please check your link or request a new one.");
     } else {
       setIsValidToken(true);
+      // In a real app, you'd likely make an API call here to validate the token
+      // e.g., api.get(`/auth/validate-reset-token?token=${tokenFromUrl}`)
+      // .then(res => setIsValidToken(res.data.valid))
+      // .catch(err => { setIsValidToken(false); setError(err.response?.data?.message || "Invalid token."); });
     }
   }, []);
 
@@ -47,35 +56,39 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ onNavigate }) => {
     if (newPassword !== confirmPassword) {
       setError('Passwords do not match.');
       return;
-    }
+      }
 
-    setIsLoading(true);
+      setIsLoading(true);
 
-    // --- Mock Backend Interaction for Password Reset Confirmation ---
-    // In a real application, you would send newPassword and the token to your backend.
-    // The backend would:
-    // 1. Verify the token's validity (existence, expiry, matching user).
-    // 2. Hash the new password.
-    // 3. Update the user's password hash in the database.
-    // 4. Invalidate the reset token to prevent reuse.
-    // Example: await api.post('/auth/reset-password', { token: tokenFromUrl, newPassword });
+      try {
+          // In a real application, you would make an API call here:
+          // const response = await api.post('/auth/reset-password', {
+          //   token: new URLSearchParams(window.location.search).get('token'),
+          //   newPassword: newPassword
+          // });
 
-    console.log(`Simulating password reset for token with new password.`);
+          // Simulate API call delay and success/failure for demonstration
+          await new Promise(resolve => setTimeout(() => resolve(null), Math.random() * 1000 + 500));
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(() => resolve(null), Math.random() * 1000 + 500));
+          // Simulate a successful response
+          setMessage('Your password has been reset successfully. You can now log in with your new password.');
+          setNewPassword('');
+          setConfirmPassword('');
 
-    // Simulate success
-    setMessage('Your password has been reset successfully. You can now log in with your new password.');
-    setNewPassword('');
-    setConfirmPassword('');
-    
-    // After successful reset, typically navigate to login page
-    setTimeout(() => {
-      onNavigate('login');
-    }, 2000); // Redirect to login after 2 seconds
+          // After successful reset, typically navigate to login page
+          setTimeout(() => {
+              onNavigate('login');
+          }, 2000); // Redirect to login after 2 seconds
 
-    setIsLoading(false);
+      } catch (err) {
+          // Handle real API errors here
+          // const apiErrorMessage = err.response?.data?.message || 'Failed to reset password. Please try again.';
+          // setError(apiErrorMessage);
+          setError('Failed to reset password. Please try again. (Simulated Error)'); // Simulated error
+          console.error("Password reset failed:", err);
+      } finally {
+          setIsLoading(false);
+      }
   };
 
   return (
@@ -91,7 +104,7 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ onNavigate }) => {
             </p>
           )}
         </div>
-        
+
         {isValidToken ? (
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div className="rounded-md shadow-sm -space-y-px">

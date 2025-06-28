@@ -1,11 +1,17 @@
 // src/pages/Register.tsx
 import React, { useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../context/useAuth'; // Correct import path for useAuth
 import api from '../api/api';
-import type { User } from '../types/job'; // ADDED 'type' keyword
+import type { LoginResponse } from '../types/job';
+import axios, { AxiosError } from 'axios'; // Import axios itself
+
+// Type guard to check if an error is an AxiosError (Good to keep this)
+function isAxiosError(error: unknown): error is AxiosError {
+  return axios.isAxiosError(error);
+}
 
 interface RegisterProps {
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, param?: number | string) => void; // Updated to match App.tsx's handleNavigate
 }
 
 const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
@@ -14,53 +20,91 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'job_seeker' | 'recruiter'>('job_seeker');
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null); // New state for success message
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth(); // We can automatically log in after registration
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccessMessage(null); // Clear previous messages
     setLoading(true);
 
     try {
-      // Check if username or email already exists
-      const usernameExists = await api.get<User[]>(`/users?username=${username}`);
-      if (usernameExists.data.length > 0) {
-        setError('Username already taken.');
-        setLoading(false);
-        return;
-      }
+      // CORRECTED: Changed '/api/auth/register' to '/auth/register'
+      // The baseURL in api.ts already handles '/api'
+      const response = await api.post<LoginResponse>('/auth/register', {
+        username,
+        email,
+        password,
+        is_recruiter: role === 'recruiter', // Send boolean to backend
+      });
 
-      const emailExists = await api.get<User[]>(`/users?email=${email}`);
-      if (emailExists.data.length > 0) {
-        setError('Email already registered.');
-        setLoading(false);
-        return;
-      }
+      const { user: registeredBackendUser, access_token } = response.data;
 
-      // If unique, register the new user
-      const newUser: Omit<User, 'id'> = { username, email, password, role };
-      const response = await api.post<User>('/users', newUser);
+      // Log in the user immediately in AuthContext
+      // Note: For registration, you might choose to redirect to login page
+      // without auto-logging in, but current flow logs in.
+      login(registeredBackendUser, access_token);
 
-      // For recruiters, also add a company entry
+      // For recruiters, attempt to create a default company entry
       if (role === 'recruiter') {
-        // Find highest company ID and increment
-        const companyRes = await api.get('/companies?_sort=id&_order=desc&_limit=1');
-        const lastCompanyId = companyRes.data.length > 0 ? companyRes.data[0].id : 100; // Start from 100 if no companies
-        const newCompanyId = lastCompanyId + 1;
-
-        await api.post('/companies', { id: newCompanyId, name: `${username} Co.` });
+        try {
+          const companyPayload = {
+            name: `${username} Co.`, // Default name for the company
+            description: `Default company profile for recruiter ${username}.`,
+            industry: 'Unspecified',
+            website: `http://${username.toLowerCase().replace(/\s/g, '')}co.com`,
+            contact_email: `${username.toLowerCase()}@${username.toLowerCase().replace(/\s/g, '')}co.com`,
+            owner_id: registeredBackendUser.id, // CRITICAL: Link company to the newly registered recruiter
+          };
+          // Assuming /companies endpoint is directly under /api, so '/companies' is correct
+          await api.post('/companies', companyPayload);
+          console.log(`Default company "${companyPayload.name}" created for recruiter ${username}.`);
+        } catch (companyErr: unknown) {
+          console.error("Error creating default company for recruiter:", companyErr);
+          let companyErrorMessage = "Failed to create default company.";
+          if (isAxiosError(companyErr) && companyErr.response && companyErr.response.data && typeof companyErr.response.data === 'object') {
+            const responseData = companyErr.response.data as { message?: string };
+            if (responseData.message) {
+              companyErrorMessage = `Failed to create default company: ${responseData.message}`;
+            }
+          }
+          setError(`Registration successful, but ${companyErrorMessage} You may need to create it manually.`);
+        }
       }
 
-      // Automatically log in the new user
-      const registeredUser = response.data;
-      const dummyToken = `dummy-jwt-${registeredUser.id}-${Date.now()}`;
-      login(registeredUser, dummyToken);
+      setSuccessMessage('Registration successful! Redirecting to login...');
+      // Redirect to login page after successful registration
+      // Add a small delay to allow user to see the success message
+      setTimeout(() => {
+        onNavigate('login'); // Redirect to login after successful registration
+      }, 1500); // 1.5 second delay
 
-      onNavigate('dashboard'); // Redirect to dashboard after successful registration
-    } catch (err) {
+    } catch (err: unknown) {
+      let errorMessage = "Failed to register. Please try again.";
       console.error("Registration error:", err);
-      setError('Failed to register. Please try again.');
+
+      if (isAxiosError(err)) {
+        if (err.response) {
+          console.error("Register.tsx: Axios error response:", err.response); // Log Axios response
+          if (err.response.data && typeof err.response.data === 'object') {
+            const responseData = err.response.data as { message?: string };
+            if (responseData.message && typeof responseData.message === 'string') {
+              errorMessage = responseData.message;
+            } else {
+              errorMessage = `Failed to register: ${err.message || 'Server responded with unexpected data.'}`;
+            }
+          } else {
+            errorMessage = `Failed to register: ${err.message || 'Network error or server unreachable.'}`;
+          }
+        }
+      } else if (err instanceof Error) {
+        errorMessage = `Failed to register: ${err.message}`;
+      } else {
+        errorMessage = "Failed to register. An unexpected error occurred.";
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -124,7 +168,13 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
               <option value="recruiter">Recruiter</option>
             </select>
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-red-500 text-sm whitespace-pre-line">{error}</p>}
+          {successMessage && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+              <strong className="font-bold">Success!</strong>
+              <span className="block sm:inline"> {successMessage}</span>
+            </div>
+          )}
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
