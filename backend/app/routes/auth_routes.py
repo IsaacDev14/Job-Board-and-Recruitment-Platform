@@ -1,7 +1,9 @@
+# backend/app/routes/auth_routes.py
+
 from flask import request
 from flask_restx import Namespace, Resource, fields
 from app import db
-from app.models import User
+from app.models import User # Make sure User is imported
 from sqlalchemy.exc import IntegrityError
 
 # Create a Namespace for authentication-related routes
@@ -27,7 +29,7 @@ user_output_model = auth_ns.model('UserOutput', {
     'email': fields.String(required=True, description='The user\'s email address'),
     'is_recruiter': fields.Boolean(description='Whether the user is a recruiter'),
     'date_joined': fields.DateTime(dt_format='iso8601', description='Date and time the user joined'),
-    "role": fields.String,  
+    "role": fields.String, # Frontend expects a 'role' string
 })
 
 @auth_ns.route('/register')
@@ -37,7 +39,7 @@ class UserRegister(Resource):
     def post(self):
         """Register a new user"""
         data = request.get_json()
-        print(f"Received registration data: {data}")  # Debug input
+        print(f"Received registration data: {data}")
 
         username = data['username']
         email = data['email']
@@ -45,32 +47,37 @@ class UserRegister(Resource):
         is_recruiter = data.get('is_recruiter', False)
 
         if User.query.filter_by(username=username).first():
-            print(f"Username '{username}' already exists")  # Debug conflict
+            print(f"Username '{username}' already exists")
             auth_ns.abort(409, message="Username already taken")
 
         if User.query.filter_by(email=email).first():
-            print(f"Email '{email}' already exists")  # Debug conflict
+            print(f"Email '{email}' already exists")
             auth_ns.abort(409, message="Email already registered")
 
         try:
             print("Creating new user...")
             new_user = User(username=username, email=email, is_recruiter=is_recruiter)
-            new_user.set_password(password)
+            # Corrected: Assign plain password to the password_hash property setter
+            new_user.password_hash = password
+
+            # Set the 'role' field on the user instance for the output model,
+            # it's not a stored column but derived from is_recruiter for frontend
+            new_user.role = "recruiter" if new_user.is_recruiter else "job_seeker"
 
             db.session.add(new_user)
             db.session.commit()
-            print(f"User '{username}' registered successfully.")  # Debug success
+            print(f"User '{username}' registered successfully.")
 
             return new_user, 201
 
         except IntegrityError as ie:
             db.session.rollback()
-            print(f"IntegrityError: {ie}")  # Debug database conflict
+            print(f"IntegrityError: {ie}")
             auth_ns.abort(409, message="Error registering user: username or email might already exist")
 
         except Exception as e:
             db.session.rollback()
-            print(f"Unexpected error during registration: {e}")  # Debug general error
+            print(f"Unexpected error during registration: {e}")
             auth_ns.abort(500, message=f"An error occurred: {str(e)}")
 
 
@@ -92,18 +99,21 @@ class UserLogin(Resource):
         elif username:
             user = User.query.filter_by(username=username).first()
 
-        if user and user.check_password(password):
+        # Corrected: Use the authenticate method from the User model
+        if user and user.authenticate(password):
+            # Determine role for frontend response
             role = "recruiter" if user.is_recruiter else "job_seeker"
-            user.role = role
-            print(f"User '{user}' logged in successfully.")  # Debug login success
+            user.role = role # Assign role for the output model
+
+            print(f"User '{user.username}' logged in successfully.")
 
             return {
                 "id": user.id,
                 "username": user.username,
                 "email": user.email,
                 "is_recruiter": user.is_recruiter,
-               "role": role
+               "role": role # Ensure role is returned
             }, 200
-    
+
         else:
             auth_ns.abort(401, message="Invalid credentials")

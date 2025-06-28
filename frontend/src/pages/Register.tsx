@@ -2,7 +2,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/api';
-import type { User } from '../types/job';
+import type { User } from '../types/job'; // Assuming User type is defined here or in a shared types file
+import axios, { AxiosError } from 'axios'; // Import AxiosError
+
+// Type guard to check if an error is an AxiosError
+function isAxiosError(error: unknown): error is AxiosError {
+  return axios.isAxiosError(error);
+}
 
 interface RegisterProps {
   onNavigate: (page: string) => void;
@@ -27,29 +33,64 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
         username,
         email,
         password,
-        is_recruiter: role === 'recruiter',
+        is_recruiter: role === 'recruiter', // Send boolean to backend
       });
-
-      // For recruiters, also add a company entry
-      if (role === 'recruiter') {
-        const companyRes = await api.get('/companies?_sort=id&_order=desc&_limit=1');
-        const lastCompanyId = companyRes.data.length > 0 ? companyRes.data[0].id : 100;
-        const newCompanyId = lastCompanyId + 1;
-
-        await api.post('/companies', { id: newCompanyId, name: `${username} Co.` });
-      }
 
       const registeredUser = response.data;
       const dummyToken = `dummy-jwt-${registeredUser.id}-${Date.now()}`;
-      login(registeredUser, dummyToken);
+      login(registeredUser, dummyToken); // Log in the user immediately
 
-      onNavigate('dashboard');
-    } catch (err: any) {
-      if (err.response?.status === 409) {
-        setError(err.response.data.message);
-      } else {
-        setError('Failed to register. Please try again.');
+      // For recruiters, attempt to create a default company entry
+      if (role === 'recruiter') {
+        try {
+          // No need to get lastCompanyId or generate newCompanyId, backend handles IDs
+          const companyPayload = {
+            name: `${username} Co.`, // Default name for the company
+            description: `Default company profile for recruiter ${username}.`,
+            industry: 'Unspecified',
+            website: `http://${username.toLowerCase().replace(/\s/g, '')}co.com`,
+            contact_email: `${username.toLowerCase()}@${username.toLowerCase().replace(/\s/g, '')}co.com`,
+            owner_id: registeredUser.id, // CRITICAL: Link company to the newly registered recruiter
+          };
+          await api.post('/companies', companyPayload);
+          console.log(`Default company "${companyPayload.name}" created for recruiter ${username}.`);
+        } catch (companyErr: unknown) {
+          console.error("Error creating default company for recruiter:", companyErr);
+          let companyErrorMessage = "Failed to create default company.";
+          if (isAxiosError(companyErr) && companyErr.response && companyErr.response.data && typeof companyErr.response.data === 'object') {
+            const responseData = companyErr.response.data as { message?: string };
+            if (responseData.message) {
+              companyErrorMessage = `Failed to create default company: ${responseData.message}`;
+            }
+          }
+          setError(`Registration successful, but ${companyErrorMessage} You may need to create it manually.`);
+          // Do not prevent navigation, as user registration itself was successful
+        }
       }
+
+      onNavigate('dashboard'); // Navigate to dashboard after successful registration (and optional company creation)
+
+    } catch (err: unknown) { // Use 'unknown' for initial catch
+      let errorMessage = "Failed to register. Please try again.";
+      console.error("Registration error:", err); // Log the full error for debugging
+
+      if (isAxiosError(err)) {
+        if (err.response && err.response.data && typeof err.response.data === 'object') {
+          const responseData = err.response.data as { message?: string };
+          if (responseData.message && typeof responseData.message === 'string') {
+            errorMessage = responseData.message; // Use the specific backend message
+          } else {
+            errorMessage = `Failed to register: ${err.message || 'Server responded with unexpected data.'}`;
+          }
+        } else {
+          errorMessage = `Failed to register: ${err.message || 'Network error or server unreachable.'}`;
+        }
+      } else if (err instanceof Error) {
+        errorMessage = `Failed to register: ${err.message}`;
+      } else {
+        errorMessage = "Failed to register. An unexpected error occurred.";
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -113,7 +154,7 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
               <option value="recruiter">Recruiter</option>
             </select>
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-red-500 text-sm whitespace-pre-line">{error}</p>}
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"

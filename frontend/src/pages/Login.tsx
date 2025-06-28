@@ -2,7 +2,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/api';
-import type { User } from '../types/job';
+import type { User } from '../types/job'; // Assuming User type is defined here or in a shared types file
+import axios, { AxiosError } from 'axios'; // Import AxiosError
+
+// Type guard to check if an error is an AxiosError
+function isAxiosError(error: unknown): error is AxiosError {
+  return axios.isAxiosError(error);
+}
 
 interface LoginProps {
   onNavigate: (page: string) => void;
@@ -31,15 +37,27 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
         const loggedInUser = response.data;
         const dummyToken = `dummy-jwt-${loggedInUser.id}-${Date.now()}`;
         login(loggedInUser, dummyToken);
-        localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser)); // Store token in localStorage
-        // Redirect to /jobs route
+        // Note: window.location.href = '/jobs' is a full page reload,
+        // consider using onNavigate('jobs') if you have a client-side router
         window.location.href = '/jobs';
       } else {
         setError('Invalid username or password.');
       }
-    } catch (err) {
+    } catch (err: unknown) { // Use 'unknown' for initial catch
       console.error("Login error:", err);
-      setError('Failed to log in. Please check your network or server status.');
+      let errorMessage = "Failed to log in. Please check your network or server status.";
+
+      if (isAxiosError(err)) {
+        if (err.response && err.response.data && typeof err.response.data === 'object') {
+          const responseData = err.response.data as { message?: string };
+          if (responseData.message && typeof responseData.message === 'string') {
+            errorMessage = responseData.message;
+          }
+        }
+      } else if (err instanceof Error) {
+        errorMessage = `Login failed: ${err.message}`;
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

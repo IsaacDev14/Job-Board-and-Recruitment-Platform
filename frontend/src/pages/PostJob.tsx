@@ -1,8 +1,16 @@
-import React, { useState, useEffect } from 'react';
+// frontend/src/components/PostJob.tsx
+
+import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/api';
-import type { Company, Job } from '../types/job';
+import type { Company } from '../types/job';
 import { FaSpinner } from 'react-icons/fa';
+import axios, { AxiosError } from 'axios'; // Ensure AxiosError is imported
+
+// Type guard to check if an error is an AxiosError
+function isAxiosError(error: unknown): error is AxiosError {
+  return axios.isAxiosError(error);
+}
 
 interface PostJobProps {
   onNavigate: (page: string, param?: number | string) => void;
@@ -16,32 +24,11 @@ const PostJob: React.FC<PostJobProps> = ({ onNavigate }) => {
   const [jobType, setJobType] = useState('Full-time');
   const [image, setImage] = useState('');
   const [description, setDescription] = useState('');
-  const [companyId, setCompanyId] = useState<number | null>(null);
-  const [companyName, setCompanyName] = useState<string | null>(null);
+
+  const [companyName, setCompanyName] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchCompanyId = async () => {
-      if (user && user.role === 'recruiter') {
-        try {
-          const response = await api.get<Company[]>(`/companies?name=${user.username} Co.`);
-          if (response.data.length > 0) {
-            const company = response.data[0];
-            setCompanyId(company.id);
-            setCompanyName(company.name);
-          } else {
-            setError("Company profile not found. Please ensure it's registered.");
-          }
-        } catch (err) {
-          console.error("Failed to fetch company:", err);
-          setError("Failed to load company information.");
-        }
-      }
-    };
-    fetchCompanyId();
-  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,37 +37,72 @@ const PostJob: React.FC<PostJobProps> = ({ onNavigate }) => {
     setLoading(true);
 
     if (!user || user.role !== 'recruiter') {
-      setError("Only recruiters can post jobs.");
+      setError("Access Denied: Only recruiters can post jobs.");
       setLoading(false);
       return;
     }
 
-    // if (companyId === null) {
-    //   setError("Company ID is missing. Cannot post job.");
-    //   setLoading(false);
-    //   return;
-    // }
+    if (!companyName.trim()) {
+      setError("Company name cannot be empty.");
+      setLoading(false);
+      return;
+    }
 
     try {
-      const jobsRes = await api.get<Job[]>('/jobs/?_sort=id&_order=desc&_limit=1');
-      const lastJobId = jobsRes.data.length > 0 ? jobsRes.data[0].id : 0;
-      const newJobId = lastJobId + 1;
-      const recruiter = localStorage.getItem('loggedInUser')
+      let currentCompanyId: number | null = null;
+
+      const companySearchResponse = await api.get<Company[]>(`/companies?name=${encodeURIComponent(companyName.trim())}`);
+      const existingCompany = companySearchResponse.data.find(comp =>
+        comp.name.toLowerCase() === companyName.trim().toLowerCase()
+      );
+
+      if (existingCompany) {
+        currentCompanyId = existingCompany.id;
+        console.log(`Found existing company: ${existingCompany.name} (ID: ${currentCompanyId})`);
+      } else {
+        console.log(`Company "${companyName.trim()}" not found, attempting to create...`);
+
+        // Ensure user.id exists before attempting to use it
+        if (!user.id) {
+          setError("User ID is missing. Cannot create company without an owner.");
+          setLoading(false);
+          return;
+        }
+
+        const newCompanyPayload = {
+          name: companyName.trim(),
+          description: `Company profile for ${companyName.trim()}. This is a newly created company.`,
+          industry: 'Unspecified',
+          website: `http://www.${companyName.trim().toLowerCase().replace(/\s/g, '')}.com`,
+          contact_email: `contact@${companyName.trim().toLowerCase().replace(/\s/g, '')}.com`,
+          owner_id: user.id // <-- THIS IS THE CRITICAL ADDITION/MODIFICATION
+        };
+        const newCompanyResponse = await api.post<Company>('/companies', newCompanyPayload);
+        currentCompanyId = newCompanyResponse.data.id;
+        console.log(`Created new company: ${newCompanyResponse.data.name} (ID: ${currentCompanyId})`);
+      }
+
+      if (currentCompanyId === null) {
+        setError("Could not determine or create company ID. Please try again.");
+        setLoading(false);
+        return;
+      }
+
       const newJobPayload = {
-        recruiter_id:recruiter ? JSON.parse(recruiter).id : user.id,
-        id: newJobId,
+        recruiter_id: user.id, // Assuming job also needs recruiter_id
         title: jobTitle,
-        company_id: 1,
+        company_id: currentCompanyId,
         location,
-        salary: Number(salaryRange),
-        type: jobType,
+        salary: salaryRange,
+        job_type: jobType,
         image: image || 'https://via.placeholder.com/400x200?text=Job+Image',
         description,
+        is_active: true,
       };
 
       console.log("Posting job payload:", newJobPayload);
 
-      await api.post('/jobs/', newJobPayload);
+      await api.post('/jobs', newJobPayload);
 
       setSuccess("Job posted successfully!");
       setJobTitle('');
@@ -89,13 +111,45 @@ const PostJob: React.FC<PostJobProps> = ({ onNavigate }) => {
       setJobType('Full-time');
       setImage('');
       setDescription('');
+      setCompanyName('');
 
       setTimeout(() => {
         onNavigate('dashboard');
       }, 2000);
-    } catch (err: any) {
-      console.error("Post job error:", err.response?.data || err.message || err);
-      setError("Failed to post job. Please try again.");
+
+    } catch (err: unknown) { // Use 'unknown' for initial catch
+      let errorMessage = "Failed to post job. Please try again.";
+      console.error("Full error object:", err); // Log the full error for debugging
+
+      if (isAxiosError(err)) {
+        // Axios error - try to get a specific message from the response data
+        if (err.response && err.response.data && typeof err.response.data === 'object') {
+          // Safely check if 'message' property exists and is a string
+          const responseData = err.response.data as { message?: string; errors?: Record<string, string> }; // Cast to an object that *might* have 'message' and 'errors'
+          if (responseData.message && typeof responseData.message === 'string') {
+            errorMessage = `Failed to post job: ${responseData.message}`;
+            if (responseData.errors) {
+                // Append specific validation errors if present
+                for (const key in responseData.errors) {
+                    errorMessage += `\n${key}: ${responseData.errors[key]}`;
+                }
+            }
+          } else {
+            // Fallback to Axios's own message if response data is not as expected
+            errorMessage = `Failed to post job: ${err.message || 'Server responded with unexpected data.'}`;
+          }
+        } else {
+          // No response data (e.g., network error, CORS, timeout)
+          errorMessage = `Failed to post job: ${err.message || 'Network error or server unreachable.'}`;
+        }
+      } else if (err instanceof Error) {
+        // Generic JavaScript error (e.g., TypeError, ReferenceError)
+        errorMessage = `Failed to post job: ${err.message}`;
+      } else {
+        // Truly unknown error type
+        errorMessage = "Failed to post job. An unexpected error occurred.";
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -113,7 +167,7 @@ const PostJob: React.FC<PostJobProps> = ({ onNavigate }) => {
     <section className="min-h-screen py-16 px-4 bg-gray-50 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
         <h2 className="text-3xl font-bold text-center mb-6">Post a New Job</h2>
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+        {error && <p className="text-red-500 text-center mb-4 whitespace-pre-line">{error}</p>}
         {success && <p className="text-green-500 text-center mb-4">{success}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -138,10 +192,10 @@ const PostJob: React.FC<PostJobProps> = ({ onNavigate }) => {
             <input
               type="text"
               id="companyName"
-              value={companyName || `${user?.username} Co.`}
-              readOnly
-              disabled
-              className="mt-1 block w-full px-3 py-2 border bg-gray-100 rounded-md cursor-not-allowed"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              required
+              className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-500"
             />
           </div>
 
