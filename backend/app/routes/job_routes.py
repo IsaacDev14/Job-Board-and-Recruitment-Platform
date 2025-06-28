@@ -1,9 +1,7 @@
-# backend/app/routes/job_routes.py
-
 from flask import request
 from flask_restx import Namespace, Resource, fields, reqparse
 from app import db # Import the db instance
-from app.models import Job, User, Company # Import Job, User, and Company models
+from app.models import Job, User, Company, Application # Import Job, User, Company, and Application models
 from sqlalchemy.exc import IntegrityError, DataError
 from sqlalchemy.orm import joinedload # Import joinedload for eager loading
 from datetime import datetime # Import datetime for date_posted
@@ -248,20 +246,32 @@ class JobResource(Resource):
                 responses={204: 'Job deleted successfully', 400: 'Cannot delete job with associated applications', 404: 'Job not found', 500: 'Internal Server Error'})
     def delete(self, job_id):
         """Delete a job posting by ID"""
+        print(f"Backend: Attempting to delete job with ID: {job_id}") # Debug log
+
         job = Job.query.get(job_id)
         if not job:
+            print(f"Backend: Job with ID {job_id} not found.") # Debug log
             job_ns.abort(404, message="Job posting not found")
 
         # Check if there are any applications associated with this job
         # Assuming you have an Application model and relationship
-        if hasattr(job, 'applications') and job.applications.first():
+        has_applications = bool(job.applications) # CORRECTED: Check if the list is not empty
+        print(f"Backend: Job {job_id} has associated applications? {has_applications}") # Debug log
+
+        if has_applications:
+            print(f"Backend: Aborting delete for job {job_id} due to associated applications.") # Debug log
             job_ns.abort(400, message="Cannot delete job: There are applications associated with this job.")
 
         try:
             db.session.delete(job)
             db.session.commit()
+            print(f"Backend: Job {job_id} successfully deleted from database.") # Debug log
             return '', 204
         except Exception as e:
             db.session.rollback()
-            print(f"Unexpected error deleting job: {e}")
-            job_ns.abort(500, message=f"An error occurred: {str(e)}")
+            print(f"Backend: Unexpected error deleting job {job_id}: {e}") # Debug log with full exception
+            # Log the full traceback for more detail in your server console
+            import traceback
+            traceback.print_exc()
+            job_ns.abort(500, message=f"An unexpected error occurred: {str(e)}")
+
