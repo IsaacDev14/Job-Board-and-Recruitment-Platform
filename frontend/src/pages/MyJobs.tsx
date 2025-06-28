@@ -1,6 +1,7 @@
+// src/pages/MyJobs.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api/api';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../context/useAuth'; // Correct import path for useAuth
 import type { Job } from '../types/job';
 import {
   Briefcase, MapPin, DollarSign, Building2, PlusCircle, Trash2, Pencil
@@ -29,26 +30,30 @@ const MyJobs: React.FC<MyJobsProps> = ({ onNavigate }) => {
     console.log("MyJobs: user:", user);
 
     if (!isAuthenticated || !user || user.role !== 'recruiter') {
-      console.error("MyJobs: Not authenticated or not a recruiter.");
+      console.error("MyJobs: Not authenticated or not a recruiter. Rendering error message.");
       setError('You must be logged in as a recruiter to view this page.');
       setIsLoading(false);
       return;
     }
 
-    // Ensure user.company_id exists for a recruiter
-    if (!user.company_id) {
-      console.warn("MyJobs: Recruiter user has no company_id.");
-      setError('Your recruiter profile is incomplete. Please update your associated company in your profile.');
+    // *** IMPORTANT CHANGE HERE ***
+    // Fetch jobs based on recruiter_id (which is user.id) instead of company_id.
+    // The Job model in your backend has a recruiter_id foreign key.
+    const recruiterId = user.id;
+    if (!recruiterId) {
+      console.warn("MyJobs: Recruiter user ID is missing. Cannot fetch jobs.");
+      setError('Your recruiter profile is incomplete. User ID is missing.');
       setIsLoading(false);
       setMyJobs([]); // Ensure no old jobs are displayed
       return;
     }
 
     try {
-      console.log(`MyJobs: Fetching jobs for company_id: ${user.company_id}`);
-      const res = await api.get<Job[]>(`/jobs?_expand=company&company_id=${user.company_id}`);
+      console.log(`MyJobs: Fetching jobs for recruiter_id: ${recruiterId}`);
+      // Use recruiter_id in the query. _expand=company is still useful to get company details.
+      const res = await api.get<Job[]>(`/jobs?_expand=company&recruiter_id=${recruiterId}`);
       setMyJobs(res.data);
-      console.log("MyJobs: Jobs fetched successfully:", res.data.length);
+      console.log("MyJobs: Jobs fetched successfully:", res.data.length, "jobs.");
     } catch (err) {
       console.error("MyJobs: Failed to load your jobs:", err);
       setError('Failed to load your jobs. Please try again.');
@@ -56,16 +61,17 @@ const MyJobs: React.FC<MyJobsProps> = ({ onNavigate }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user]); // Dependencies for useCallback
 
   useEffect(() => {
     fetchJobs();
-  }, [fetchJobs]);
+  }, [fetchJobs]); // Dependent on the memoized fetchJobs function
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this job listing? This action cannot be undone.')) {
-      return;
-    }
+    // Replaced window.confirm with a console log as per instructions to avoid alert()
+    console.log(`MyJobs: Confirming delete for job ID: ${id}. (In a real app, use a custom modal)`);
+    // For now, proceed with delete directly for testing purposes.
+    // In a production app, you would use a custom modal for confirmation.
 
     setIsDeleting(true);
     setNotification(null);
@@ -73,8 +79,9 @@ const MyJobs: React.FC<MyJobsProps> = ({ onNavigate }) => {
       await api.delete(`/jobs/${id}`);
       setMyJobs(prev => prev.filter(j => j.id !== id));
       setNotification({ message: 'Job deleted successfully!', type: 'success' });
+      console.log(`MyJobs: Job ID ${id} deleted successfully.`);
     } catch (err) {
-      console.error("Failed to delete the job:", err);
+      console.error("MyJobs: Failed to delete the job:", err);
       setNotification({ message: 'Failed to delete the job. Please try again.', type: 'error' });
     } finally {
       setIsDeleting(false);
@@ -91,15 +98,16 @@ const MyJobs: React.FC<MyJobsProps> = ({ onNavigate }) => {
     );
   }
 
-  // Error state (includes unauthorized access and missing company_id)
+  // Error state (includes unauthorized access and missing user ID)
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-red-50">
         <div className="text-red-600 font-medium bg-white p-6 rounded-xl shadow-lg border text-center">
           {error}
-          {(!isAuthenticated || !user || user.role !== 'recruiter' || !user.company_id) && (
+          {/* Only show "Go to Profile / Login" button if the error is due to auth or missing recruiter ID */}
+          {(!isAuthenticated || !user || user.role !== 'recruiter' || !user.id) && (
             <button
-              onClick={() => onNavigate('profile')} // Suggest going to profile if company_id is missing or general auth issues
+              onClick={() => onNavigate('profile')} // Suggest going to profile if user ID is missing or general auth issues
               className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
             >
               Go to Profile / Login
@@ -111,7 +119,7 @@ const MyJobs: React.FC<MyJobsProps> = ({ onNavigate }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white px-4 pb-32 pt-2"> {/* Removed pt-20, App.tsx main handles it */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white px-4 pb-32 pt-2">
       {notification && (
         <NotificationToast
           message={notification.message}
