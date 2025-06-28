@@ -10,7 +10,6 @@ from .job_routes import job_ns
 from .auth_routes import auth_ns
 
 # Create a Blueprint for the API
-# IMPORTANT: No strict_slashes=False here on the Blueprint
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
 # Initialize Flask-RESTx Api on the blueprint
@@ -23,7 +22,5 @@ api = Api(api_bp,
 # Add all namespaces to the API
 api.add_namespace(user_ns, path='/users')
 api.add_namespace(company_ns, path='/companies')
-api.add_namespace(job_ns, path='/jobs') # job_ns is mounted at /api/jobs
+api.add_namespace(job_ns, path='/jobs')
 api.add_namespace(auth_ns, path='/auth')
-
-# Note: The api_bp (Blueprint) itself will be registered with the Flask app in app/__init__.py

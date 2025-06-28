@@ -1,5 +1,3 @@
-// src/pages/MyJobs.tsx
-
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api/api';
 import { useAuth } from '../hooks/useAuth';
@@ -17,16 +15,21 @@ const MyJobs: React.FC<MyJobsProps> = ({ onNavigate }) => {
   const { user, isAuthenticated } = useAuth();
   const [myJobs, setMyJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDeleting, setIsDeleting] = useState(false); // New state for delete action
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null); // New state for notifications
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const fetchJobs = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     setNotification(null); // Clear previous notifications
 
+    console.log("MyJobs: Attempting to fetch jobs...");
+    console.log("MyJobs: isAuthenticated:", isAuthenticated);
+    console.log("MyJobs: user:", user);
+
     if (!isAuthenticated || !user || user.role !== 'recruiter') {
+      console.error("MyJobs: Not authenticated or not a recruiter.");
       setError('You must be logged in as a recruiter to view this page.');
       setIsLoading(false);
       return;
@@ -34,6 +37,7 @@ const MyJobs: React.FC<MyJobsProps> = ({ onNavigate }) => {
 
     // Ensure user.company_id exists for a recruiter
     if (!user.company_id) {
+      console.warn("MyJobs: Recruiter user has no company_id.");
       setError('Your recruiter profile is incomplete. Please update your associated company in your profile.');
       setIsLoading(false);
       setMyJobs([]); // Ensure no old jobs are displayed
@@ -41,30 +45,30 @@ const MyJobs: React.FC<MyJobsProps> = ({ onNavigate }) => {
     }
 
     try {
-      // Fetch all jobs and filter by the authenticated recruiter's company_id
-      // We use _expand=company to get company details for display
+      console.log(`MyJobs: Fetching jobs for company_id: ${user.company_id}`);
       const res = await api.get<Job[]>(`/jobs?_expand=company&company_id=${user.company_id}`);
-      setMyJobs(res.data); // json-server filters directly with company_id query param
+      setMyJobs(res.data);
+      console.log("MyJobs: Jobs fetched successfully:", res.data.length);
     } catch (err) {
-      console.error("Failed to load your jobs:", err);
+      console.error("MyJobs: Failed to load your jobs:", err);
       setError('Failed to load your jobs. Please try again.');
       setNotification({ message: 'Failed to load jobs.', type: 'error' });
     } finally {
       setIsLoading(false);
     }
-  }, [isAuthenticated, user]); // Dependencies for useCallback
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     fetchJobs();
-  }, [fetchJobs]); // Dependent on memoized fetchJobs
+  }, [fetchJobs]);
 
   const handleDelete = async (id: number) => {
     if (!window.confirm('Are you sure you want to delete this job listing? This action cannot be undone.')) {
       return;
     }
 
-    setIsDeleting(true); // Indicate delete action is in progress
-    setNotification(null); // Clear previous notifications
+    setIsDeleting(true);
+    setNotification(null);
     try {
       await api.delete(`/jobs/${id}`);
       setMyJobs(prev => prev.filter(j => j.id !== id));
@@ -73,7 +77,7 @@ const MyJobs: React.FC<MyJobsProps> = ({ onNavigate }) => {
       console.error("Failed to delete the job:", err);
       setNotification({ message: 'Failed to delete the job. Please try again.', type: 'error' });
     } finally {
-      setIsDeleting(false); // Reset delete loading state
+      setIsDeleting(false);
     }
   };
 
@@ -87,45 +91,27 @@ const MyJobs: React.FC<MyJobsProps> = ({ onNavigate }) => {
     );
   }
 
-  // Error state
+  // Error state (includes unauthorized access and missing company_id)
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-red-50">
-        <div className="text-red-600 font-medium bg-white p-6 rounded-xl shadow-lg border">
+        <div className="text-red-600 font-medium bg-white p-6 rounded-xl shadow-lg border text-center">
           {error}
-          <button
-            onClick={() => onNavigate('dashboard')}
-            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
-          >
-            Go to Dashboard
-          </button>
+          {(!isAuthenticated || !user || user.role !== 'recruiter' || !user.company_id) && (
+            <button
+              onClick={() => onNavigate('profile')} // Suggest going to profile if company_id is missing or general auth issues
+              className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
+            >
+              Go to Profile / Login
+            </button>
+          )}
         </div>
       </div>
     );
   }
-
-  // Render content only if user is a recruiter and company_id is set
-  if (!user || user.role !== 'recruiter' || !user.company_id) {
-    // This case should ideally be caught by the initial error state,
-    // but as a fallback, ensure proper message.
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-red-50">
-        <div className="text-red-600 font-medium bg-white p-6 rounded-xl shadow-lg border">
-          Access Denied: You must be logged in as a recruiter with an associated company to view this page.
-          <button
-            onClick={() => onNavigate('login')}
-            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
-          >
-            Login as Recruiter
-          </button>
-        </div>
-      </div>
-    );
-  }
-
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white px-4 pb-32 pt-20">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white px-4 pb-32 pt-2"> {/* Removed pt-20, App.tsx main handles it */}
       {notification && (
         <NotificationToast
           message={notification.message}
@@ -193,14 +179,14 @@ const MyJobs: React.FC<MyJobsProps> = ({ onNavigate }) => {
                   <button
                     onClick={() => onNavigate('post-job', job.id)} // Pass job.id for editing
                     className="px-4 py-2 rounded-md bg-yellow-400 hover:bg-yellow-500 text-white font-medium flex items-center gap-2 shadow"
-                    disabled={isDeleting} // Disable edit during delete action
+                    disabled={isDeleting}
                   >
                     <Pencil size={16} /> Edit
                   </button>
                   <button
                     onClick={() => handleDelete(job.id)}
                     className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white font-medium flex items-center gap-2 shadow"
-                    disabled={isDeleting} // Disable delete if another delete is in progress
+                    disabled={isDeleting}
                   >
                     <Trash2 size={16} /> {isDeleting ? 'Deleting...' : 'Delete'}
                   </button>

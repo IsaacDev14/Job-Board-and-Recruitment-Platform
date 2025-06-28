@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/api';
-import type { User } from '../types/job'; // Assuming User type is defined here or in a shared types file
-import axios, { AxiosError } from 'axios'; // Import AxiosError
+import type { LoginResponse } from '../types/job';
+import axios, { AxiosError } from 'axios'; // Import axios itself
 
-// Type guard to check if an error is an AxiosError
+// Type guard to check if an error is an AxiosError (Good to keep this)
 function isAxiosError(error: unknown): error is AxiosError {
   return axios.isAxiosError(error);
 }
@@ -29,29 +29,31 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
     setLoading(true);
 
     try {
-      const response = await api.post<User>('/auth/register', {
+      // CORRECTED: Changed '/api/auth/register' to '/auth/register'
+      // The baseURL in api.ts already handles '/api'
+      const response = await api.post<LoginResponse>('/auth/register', {
         username,
         email,
         password,
         is_recruiter: role === 'recruiter', // Send boolean to backend
       });
 
-      const registeredUser = response.data;
-      const dummyToken = `dummy-jwt-${registeredUser.id}-${Date.now()}`;
-      login(registeredUser, dummyToken); // Log in the user immediately
+      const { user: registeredBackendUser, access_token } = response.data;
+
+      login(registeredBackendUser, access_token); // Log in the user immediately
 
       // For recruiters, attempt to create a default company entry
       if (role === 'recruiter') {
         try {
-          // No need to get lastCompanyId or generate newCompanyId, backend handles IDs
           const companyPayload = {
             name: `${username} Co.`, // Default name for the company
             description: `Default company profile for recruiter ${username}.`,
             industry: 'Unspecified',
             website: `http://${username.toLowerCase().replace(/\s/g, '')}co.com`,
             contact_email: `${username.toLowerCase()}@${username.toLowerCase().replace(/\s/g, '')}co.com`,
-            owner_id: registeredUser.id, // CRITICAL: Link company to the newly registered recruiter
+            owner_id: registeredBackendUser.id, // CRITICAL: Link company to the newly registered recruiter
           };
+          // Assuming /companies endpoint is directly under /api, so '/companies' is correct
           await api.post('/companies', companyPayload);
           console.log(`Default company "${companyPayload.name}" created for recruiter ${username}.`);
         } catch (companyErr: unknown) {
@@ -64,21 +66,20 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
             }
           }
           setError(`Registration successful, but ${companyErrorMessage} You may need to create it manually.`);
-          // Do not prevent navigation, as user registration itself was successful
         }
       }
 
-      onNavigate('dashboard'); // Navigate to dashboard after successful registration (and optional company creation)
+      onNavigate('dashboard');
 
-    } catch (err: unknown) { // Use 'unknown' for initial catch
+    } catch (err: unknown) {
       let errorMessage = "Failed to register. Please try again.";
-      console.error("Registration error:", err); // Log the full error for debugging
+      console.error("Registration error:", err);
 
       if (isAxiosError(err)) {
         if (err.response && err.response.data && typeof err.response.data === 'object') {
           const responseData = err.response.data as { message?: string };
           if (responseData.message && typeof responseData.message === 'string') {
-            errorMessage = responseData.message; // Use the specific backend message
+            errorMessage = responseData.message;
           } else {
             errorMessage = `Failed to register: ${err.message || 'Server responded with unexpected data.'}`;
           }

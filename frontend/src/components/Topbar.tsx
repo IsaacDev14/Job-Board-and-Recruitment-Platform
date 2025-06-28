@@ -1,6 +1,6 @@
 // src/components/Topbar.tsx
 import React, { useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../context/useAuth'; // Correct import path for useAuth
 import { LogOut, Home, Briefcase, User, Heart, Settings, PlusCircle, LayoutDashboard, Compass } from 'lucide-react';
 import { FaBars, FaTimes } from 'react-icons/fa';
 
@@ -51,8 +51,7 @@ const Topbar: React.FC<TopbarProps> = ({ onNavigate }) => {
               onClick={() => handleNavLinkClick('home')}
               className="flex items-center text-2xl font-extrabold text-blue-400 hover:text-blue-300 transition-colors duration-200"
             >
-              {/* Changed icon color to a brighter, more contrasting blue */}
-              <Briefcase size={24} className="text-blue-300 mr-2" /> {/* Increased size and added margin for clarity */}
+              <Briefcase size={24} className="text-blue-300 mr-2" />
               JobBoard
             </button>
           </div>
@@ -63,15 +62,16 @@ const Topbar: React.FC<TopbarProps> = ({ onNavigate }) => {
 
             {isAuthenticated && user?.role === 'job_seeker' && (
               <>
-                <NavLink icon={<Compass size={18} />} text="Dashboard" onClick={() => handleNavLinkClick('job-seeker-dashboard')} />
-                <NavLink icon={<Briefcase size={18} />} text="My Applications" onClick={() => handleNavLinkClick('applied-jobs')} />
+                <NavLink icon={<Compass size={18} />} text="Dashboard" onClick={() => handleNavLinkClick('dashboard')} />
+                <NavLink icon={<Briefcase size={18} />} text="My Applications" onClick={() => handleNavLinkClick('applications')} />
                 <NavLink icon={<Heart size={18} />} text="Saved Jobs" onClick={() => handleNavLinkClick('saved-jobs')} />
               </>
             )}
 
             {isAuthenticated && user?.role === 'recruiter' && (
               <>
-                <NavLink icon={<LayoutDashboard size={18} />} text="Dashboard" onClick={() => handleNavLinkClick('recruiter-dashboard')} />
+                {/* Both Dashboard and My Jobs will now navigate to 'my-jobs' */}
+                <NavLink icon={<LayoutDashboard size={18} />} text="Dashboard" onClick={() => handleNavLinkClick('my-jobs')} />
                 <NavLink icon={<Briefcase size={18} />} text="My Jobs" onClick={() => handleNavLinkClick('my-jobs')} />
                 <NavLink icon={<PlusCircle size={18} />} text="Post Job" onClick={() => handleNavLinkClick('post-job')} />
               </>
@@ -142,15 +142,16 @@ const Topbar: React.FC<TopbarProps> = ({ onNavigate }) => {
 
             {isAuthenticated && user?.role === 'job_seeker' && (
               <>
-                <MobileNavLink icon={<Compass size={20} />} text="Dashboard" onClick={() => handleNavLinkClick('job-seeker-dashboard')} />
-                <MobileNavLink icon={<Briefcase size={20} />} text="My Applications" onClick={() => handleNavLinkClick('applied-jobs')} />
+                <MobileNavLink icon={<Compass size={20} />} text="Dashboard" onClick={() => handleNavLinkClick('dashboard')} />
+                <MobileNavLink icon={<Briefcase size={20} />} text="My Applications" onClick={() => handleNavLinkClick('applications')} />
                 <MobileNavLink icon={<Heart size={20} />} text="Saved Jobs" onClick={() => handleNavLinkClick('saved-jobs')} />
               </>
             )}
 
             {isAuthenticated && user?.role === 'recruiter' && (
               <>
-                <MobileNavLink icon={<LayoutDashboard size={20} />} text="Dashboard" onClick={() => handleNavLinkClick('recruiter-dashboard')} />
+                {/* Both Dashboard and My Jobs will now navigate to 'my-jobs' */}
+                <MobileNavLink icon={<LayoutDashboard size={20} />} text="Dashboard" onClick={() => handleNavLinkClick('my-jobs')} />
                 <MobileNavLink icon={<Briefcase size={20} />} text="My Jobs" onClick={() => handleNavLinkClick('my-jobs')} />
                 <MobileNavLink icon={<PlusCircle size={20} />} text="Post Job" onClick={() => handleNavLinkClick('post-job')} />
               </>

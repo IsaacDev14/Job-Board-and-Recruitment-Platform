@@ -1,55 +1,64 @@
 // src/types/job.ts
 
-// Define the User type
 export interface User {
-  id: string | number; // IDs can be numbers (json-server auto-generates them as numbers if not specified, but strings are common too)
+  id: string | number;
   username: string;
   email: string;
-  password?: string; // Optional for safety, not sent to frontend usually
-  role: 'job_seeker' | 'recruiter' | 'admin';
-  company_id?: number | null; // Changed to number | null to explicitly allow null
+  role: 'job_seeker' | 'recruiter' | 'admin' | 'guest';
+  company_id?: number | null;
+  is_recruiter?: boolean; // Important for reconciliation with backend
 }
 
-// Define the Company type
+export interface BackendUser {
+  id: string | number;
+  username: string;
+  email: string;
+  is_recruiter: boolean;
+  company_id?: number | null;
+  // date_joined?: string; // Optional if your backend sends it
+}
+
 export interface Company {
-  id: number; // Ensure this is consistently a number
+  id: number;
   name: string;
-  industry?: string; // Optional fields
+  industry?: string;
   location?: string;
   description?: string;
   image?: string;
 }
 
-// Define the Job type
 export interface Job {
   id: number;
   title: string;
-  company_id: number; // Link to Company ID - assumed to be required for a job
-  company?: Company; // Expanded company object (optional, depends on _expand in API)
+  company_id: number;
+  company?: Company;
   location: string;
-  salary_range: string; // Keep as string for flexibility (e.g., "$50,000 - $70,000" or "Negotiable")
+  salary_range: string;
   type: 'Full-time' | 'Part-time' | 'Contract' | 'Freelance' | 'Internship';
   image?: string;
   description: string;
 }
 
-// Define the Application type
 export interface Application {
   id: number;
-  user_id: string | number; // Link to User ID
-  job_id: number; // Link to Job ID
+  user_id: string | number;
+  job_id: number;
   status: 'pending' | 'accepted' | 'rejected';
-  applied_at: string; // ISO 8601 string for date/time
-  job?: Job; // Expanded job object (optional, depends on _expand in API)
-  user?: User; // Expanded user object (optional, depends on _expand in API)
+  applied_at: string;
+  job?: Job;
+  user?: User;
 }
 
-// Define data for the dashboard statistics
 export interface DashboardStats {
   totalJobs: number;
   totalApplications: number;
-  openJobs: number; // for recruiters
-  pendingApplications: number; // for recruiters/job seekers
-  acceptedApplications: number; // for job seekers
-  rejectedApplications: number; // for job seekers
+  openJobs: number;
+  pendingApplications: number;
+  acceptedApplications: number;
+  rejectedApplications: number;
+}
+
+export interface LoginResponse {
+  access_token: string;
+  user: BackendUser;
 }

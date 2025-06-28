@@ -1,11 +1,12 @@
+// frontend/src/api/api.ts
 import axios from 'axios';
 
 // Base API instance pointed to your backend
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:5000/api', // Make sure this matches backend URL
+  baseURL: 'http://127.0.0.1:5000/api', // This is correct. It includes the /api prefix.
   headers: {
     'Content-Type': 'application/json',
-    withCredentials: true,
+    // 'withCredentials': true, // This header is usually handled by axios automatically for cross-origin requests if needed
   },
 });
 

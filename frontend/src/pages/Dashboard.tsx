@@ -1,7 +1,6 @@
-// src/pages/Dashboard.tsx
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { FaUserCircle, FaBuilding, FaBriefcase, FaListAlt, FaPlusSquare, FaFileAlt } from 'react-icons/fa'; // Corrected FaRegUserCircle to FaUserCircle
+import { FaUserCircle, FaBuilding, FaBriefcase, FaListAlt, FaPlusSquare, FaFileAlt } from 'react-icons/fa';
 
 interface DashboardProps {
   onNavigate: (page: string) => void;
@@ -12,19 +11,23 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const [loadingMessage, setLoadingMessage] = useState('Loading dashboard...');
 
   useEffect(() => {
+    console.log('Dashboard: isAuthenticated:', isAuthenticated, 'User:', user);
     const timer = setTimeout(() => {
       if (!isAuthenticated) {
-        setLoadingMessage('Redirecting to login...');
+        setLoadingMessage('Redirecting to login or home...');
+        // Consider navigating to login or home if not authenticated and no user
+        // onNavigate('login');
       } else if (!user) {
         setLoadingMessage('User data not found. Please log in again.');
       } else {
-        setLoadingMessage('');
+        setLoadingMessage(''); // Clear message if user is authenticated and data is available
       }
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, onNavigate]);
 
+  // Handle cases where authentication is not complete or user is missing
   if (!isAuthenticated || !user) {
     return <div className="text-center py-20 text-gray-700">{loadingMessage}</div>;
   }
@@ -43,7 +46,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             <h3 className="text-2xl font-semibold text-gray-900 mb-2">Account Overview</h3>
             <p className="text-gray-700 text-lg mb-1">Role: <span className="font-medium capitalize">{user.role?.replace('_', ' ')}</span></p>
             <p className="text-gray-700 text-lg mb-1">Email: <span className="font-medium">{user.email}</span></p>
-            {user.role === 'recruiter' && user.company_id !== undefined && ( // Check for undefined, not just truthy
+            {user.role === 'recruiter' && user.company_id !== undefined && (
                 <p className="text-gray-700 text-lg flex items-center">
                     <FaBuilding className="mr-2" /> Company ID: <span className="font-medium">{user.company_id}</span>
                 </p>
@@ -52,7 +55,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               onClick={() => onNavigate('profile')}
               className="mt-4 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors flex items-center"
             >
-              <FaUserCircle className="mr-2" /> Edit Profile {/* Corrected icon usage */}
+              <FaUserCircle className="mr-2" /> Edit Profile
             </button>
           </div>
 

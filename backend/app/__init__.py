@@ -1,30 +1,28 @@
-# backend/app/__init__.py
-
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
-import os # Import the os module for path operations and environment variables
+from flask_jwt_extended import JWTManager # Import JWTManager
+import os
 
 db = SQLAlchemy()
 migrate = Migrate()
 bcrypt = Bcrypt()
+jwt = JWTManager() # Initialize JWTManager
 
 def create_app():
     app = Flask(__name__)
 
     # --- APPLICATION CONFIGURATION ---
-    # Configure your database URI
-    # For SQLite, it points to a file named 'jobboard.db' inside the instance folder
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.instance_path, 'jobboard.db')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # Suppress a warning
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # Set a secret key for session management and other security features
-    # IMPORTANT: In a production environment, fetch this from an environment variable!
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a_very_secret_key_for_development_only_12345')
+    # JWT Configuration
+    app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET_KEY', 'super-secret-jwt-key') # Change this in production!
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600 # Token expires in 1 hour (3600 seconds)
 
-    # Ensure the instance folder exists for the SQLite database file
     os.makedirs(app.instance_path, exist_ok=True)
     # --- END CONFIGURATION ---
 
@@ -32,17 +30,18 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     bcrypt.init_app(app)
+    jwt.init_app(app) # Initialize JWTManager with the app
 
     # Configure CORS for your frontend
-    # Replace 'http://localhost:5173' with your actual frontend URL if different
-    CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
+    # Using CORS(app) to allow all origins for all routes during development.
+    # For production, specify origins: CORS(app, origins=["http://localhost:5173", "https://yourproductiondomain.com"])
+    CORS(app) # Broader CORS for development. If you need specific, use resources={r"/api/*": {"origins": "http://localhost:5173"}}
 
     # Import and register your API blueprint
     from app.routes import api_bp
-    app.register_blueprint(api_bp)
+    app.register_blueprint(api_bp, url_prefix='/api') # Ensure blueprint is registered under /api prefix
 
     # --- DEBUGGING: PRINT REGISTERED ROUTES ON STARTUP ---
-    # This section helps verify that your routes are correctly mapped
     print("\n--- Registered Routes (Flask app.url_map) ---")
     for rule in app.url_map.iter_rules():
         # Only print routes belonging to your 'api' blueprint for clarity
