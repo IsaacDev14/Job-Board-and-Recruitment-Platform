@@ -15,6 +15,7 @@ const EditJobModal: React.FC<EditJobModalProps> = ({ job, onClose, onSave, isLoa
   const [description, setDescription] = useState(job.description);
   const [location, setLocation] = useState(job.location);
   const [salaryRange, setSalaryRange] = useState(job.salary_range);
+  const [type, setType] = useState(job.type); // Added job type
 
   useEffect(() => {
     // Update form fields if the job prop changes (e.g., if a different job is selected)
@@ -22,6 +23,7 @@ const EditJobModal: React.FC<EditJobModalProps> = ({ job, onClose, onSave, isLoa
     setDescription(job.description);
     setLocation(job.location);
     setSalaryRange(job.salary_range);
+    setType(job.type); // Update job type
   }, [job]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,6 +33,7 @@ const EditJobModal: React.FC<EditJobModalProps> = ({ job, onClose, onSave, isLoa
       description,
       location,
       salary_range: salaryRange,
+      type, // Include job type in update
     };
     await onSave(job.id, updatedData);
   };
@@ -94,6 +97,23 @@ const EditJobModal: React.FC<EditJobModalProps> = ({ job, onClose, onSave, isLoa
               required
               disabled={isLoading}
             />
+          </div>
+          <div>
+            <label htmlFor="edit-type" className="block text-sm font-medium text-gray-700">Job Type</label>
+            <select
+              id="edit-type"
+              value={type}
+              onChange={(e) => setType(e.target.value as Job['type'])}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              required
+              disabled={isLoading}
+            >
+              <option value="Full-time">Full-time</option>
+              <option value="Part-time">Part-time</option>
+              <option value="Contract">Contract</option>
+              <option value="Freelance">Freelance</option>
+              <option value="Internship">Internship</option>
+            </select>
           </div>
           <div className="flex justify-end space-x-3 mt-6">
             <button

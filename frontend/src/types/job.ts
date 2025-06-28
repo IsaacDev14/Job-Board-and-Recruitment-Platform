@@ -7,7 +7,7 @@ export interface User {
   email: string;
   password?: string; // Optional for safety, not sent to frontend usually
   role: 'job_seeker' | 'recruiter' | 'admin';
-  company_id?: number; // <--- ADDED THIS LINE: Optional, for recruiters
+  company_id?: number | null; // Changed to number | null to explicitly allow null
 }
 
 // Define the Company type
@@ -24,10 +24,10 @@ export interface Company {
 export interface Job {
   id: number;
   title: string;
-  company_id: number; // Link to Company ID
+  company_id: number; // Link to Company ID - assumed to be required for a job
   company?: Company; // Expanded company object (optional, depends on _expand in API)
   location: string;
-  salary_range: string | number; // Allow flexible salary range
+  salary_range: string; // Keep as string for flexibility (e.g., "$50,000 - $70,000" or "Negotiable")
   type: 'Full-time' | 'Part-time' | 'Contract' | 'Freelance' | 'Internship';
   image?: string;
   description: string;

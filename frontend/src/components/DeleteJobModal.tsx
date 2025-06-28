@@ -30,6 +30,7 @@ const DeleteJobModal: React.FC<DeleteJobModalProps> = ({ job, onClose, onConfirm
         <p className="text-gray-700 mb-6">Are you sure you want to delete the job "<span className="font-semibold">{job.title}</span>"? This action cannot be undone.</p>
         <div className="flex justify-center space-x-4">
           <button
+            type="button" // Important to prevent accidental form submission
             onClick={onClose}
             className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             disabled={isLoading}
@@ -37,6 +38,7 @@ const DeleteJobModal: React.FC<DeleteJobModalProps> = ({ job, onClose, onConfirm
             Cancel
           </button>
           <button
+            type="button" // Important to prevent accidental form submission
             onClick={handleDelete}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
             disabled={isLoading}

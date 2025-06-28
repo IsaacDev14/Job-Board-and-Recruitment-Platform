@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/api';
-import type { Job, Company } from '../types/job';
+import type { Job } from '../types/job'; // Removed unused 'Company' import
 import EditJobModal from '../components/EditJobModal';
 import DeleteJobModal from '../components/DeleteJobModal';
 import NotificationToast from '../components/NotificationToast';
@@ -40,26 +40,28 @@ const RecruiterDashboard: React.FC<RecruiterDashboardProps> = ({ onNavigate }) =
 
   // useCallback to memoize the fetch function and prevent re-creation
   const fetchRecruiterData = useCallback(async () => {
-    if (!isAuthenticated || !user || user.role !== 'recruiter') {
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     setError(null);
     setNotification(null); // Clear notifications on data fetch
 
-    try {
-      const companyRes = await api.get<Company[]>(`/companies?name=${user.username} Co.`);
-      const companyId = companyRes.data.length > 0 ? companyRes.data[0].id : null;
+    if (!isAuthenticated || !user || user.role !== 'recruiter') {
+      setLoading(false);
+      // The ProtectedRoute or App.tsx should handle this, but as a safeguard:
+      setError('You are not authorized to view this page.');
+      return;
+    }
 
-      if (companyId) {
-        const jobsRes = await api.get<Job[]>(`/jobs?company_id=${companyId}`);
-        setJobs(jobsRes.data);
-      } else {
-        setJobs([]);
-        setError("Your company profile was not found. Please ensure you registered as a recruiter and try logging in again.");
-      }
+    if (!user.company_id) {
+      setLoading(false);
+      setError("Your company profile is not set. Please update your profile to associate with a company.");
+      return;
+    }
+
+    try {
+      // Fetch jobs specifically for the recruiter's company_id
+      // _expand=company ensures that the company details are included with each job
+      const jobsRes = await api.get<Job[]>(`/jobs?company_id=${user.company_id}&_expand=company`);
+      setJobs(jobsRes.data);
     } catch (err) {
       console.error("Failed to fetch recruiter dashboard data:", err);
       setError('Failed to load your jobs. Please try again later.');
@@ -92,10 +94,10 @@ const RecruiterDashboard: React.FC<RecruiterDashboardProps> = ({ onNavigate }) =
 
     setActionLoading(true);
     try {
-      await api.patch(`/jobs/${jobId}`, updatedData);
+      const response = await api.patch<Job>(`/jobs/${jobId}`, updatedData); // Get the updated job back
 
       setJobs(jobs.map(job =>
-        job.id === jobId ? { ...job, ...updatedData } : job
+        job.id === jobId ? { ...job, ...response.data } : job // Use response.data to ensure full update
       ));
       setShowEditModal(false);
       setCurrentJobToManage(null);
@@ -138,9 +140,19 @@ const RecruiterDashboard: React.FC<RecruiterDashboardProps> = ({ onNavigate }) =
     );
   }
 
-  // Ensure user is a recruiter, though parent Dashboard handles this already
-  if (!user || user.role !== 'recruiter') {
-    return <div className="text-center py-10 text-red-600">Access Denied: This dashboard is for recruiters only.</div>;
+  // Ensure user is a recruiter and has a company_id
+  if (!user || user.role !== 'recruiter' || !user.company_id) {
+    return (
+      <div className="text-center py-10 text-red-600">
+        Access Denied: This dashboard is for recruiters only and requires an associated company.
+        <button
+            onClick={() => onNavigate('profile')}
+            className="mt-4 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Update Profile
+          </button>
+      </div>
+    );
   }
 
   return (
@@ -211,18 +223,20 @@ const RecruiterDashboard: React.FC<RecruiterDashboardProps> = ({ onNavigate }) =
 
                 <div className="border-t border-gray-100 pt-3 mt-3">
                   <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap line-clamp-3">
-                      {job.description}
+                    {job.description}
                   </p>
                   <div className="mt-4 flex justify-end space-x-3">
                     <button
                       onClick={(e) => { e.stopPropagation(); handleEditClick(job); }}
                       className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200 ease-in-out"
+                      disabled={actionLoading} // Disable during any action
                     >
                       <FaEdit className="mr-2" /> Edit
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); handleDeleteClick(job); }}
                       className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200 ease-in-out"
+                      disabled={actionLoading} // Disable during any action
                     >
                       <FaTrash className="mr-2" /> Delete
                     </button>
