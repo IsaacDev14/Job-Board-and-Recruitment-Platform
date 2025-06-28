@@ -6,10 +6,10 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from datetime import datetime
 
-# --- Create a namespace for job routes ---
+# Namespace
 job_ns = Namespace('jobs', description='Job listing operations')
 
-# --- Define the Job output model for Swagger ---
+# Swagger output model
 job_model = job_ns.model('Job', {
     'id': fields.Integer(readOnly=True),
     'title': fields.String(required=True),
@@ -30,7 +30,7 @@ job_model = job_ns.model('Job', {
     'type': fields.String(attribute='job_type', readOnly=True),
 })
 
-# --- Input model for creating a job ---
+# Swagger input models
 job_create_model = job_ns.model('JobCreate', {
     'title': fields.String(required=True),
     'description': fields.String(required=True),
@@ -44,7 +44,6 @@ job_create_model = job_ns.model('JobCreate', {
     'image': fields.String(description='Image URL for job'),
 })
 
-# --- Input model for updating a job ---
 job_update_model = job_ns.model('JobUpdate', {
     'title': fields.String(),
     'description': fields.String(),
@@ -59,7 +58,7 @@ job_update_model = job_ns.model('JobUpdate', {
     'image': fields.String(description='Image URL for job'),
 })
 
-# --- Parser for filtering job queries ---
+# Query parser
 job_list_parser = reqparse.RequestParser()
 job_list_parser.add_argument('location', type=str, location='args')
 job_list_parser.add_argument('job_type', type=str, location='args')
@@ -67,8 +66,7 @@ job_list_parser.add_argument('company_id', type=int, location='args')
 job_list_parser.add_argument('recruiter_id', type=int, location='args')
 job_list_parser.add_argument('is_active', type=bool, location='args', default=True)
 
-
-# --- ROUTE: /api/jobs/ ---
+# /jobs
 @job_ns.route('/', strict_slashes=False)
 class JobList(Resource):
     @job_ns.expect(job_list_parser)
@@ -101,7 +99,6 @@ class JobList(Resource):
         if not recruiter or not recruiter.is_recruiter:
             job_ns.abort(404, message="Invalid recruiter ID or user is not a recruiter.")
 
-        company = None
         if data.get('company_id'):
             company = Company.query.get(data['company_id'])
             if not company:
@@ -129,8 +126,7 @@ class JobList(Resource):
             db.session.rollback()
             job_ns.abort(500, message=f"Error creating job: {str(e)}")
 
-
-# --- ROUTE: /api/jobs/<int:job_id> ---
+# /jobs/<job_id>
 @job_ns.route('/<int:job_id>', strict_slashes=False)
 @job_ns.param('job_id', 'The job ID')
 class JobResource(Resource):
@@ -163,7 +159,7 @@ class JobResource(Resource):
                 company = Company.query.get(company_id)
                 if not company:
                     job_ns.abort(404, message="Company not found.")
-            job.company_id = company_id
+                job.company_id = company_id
             data.pop('company_id', None)
 
         try:

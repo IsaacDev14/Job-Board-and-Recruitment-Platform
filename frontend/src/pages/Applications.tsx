@@ -118,7 +118,7 @@ const Applications: React.FC<ApplicationsProps> = ({ onNavigate }) => {
                   </span>
                   <span className="text-gray-500 mt-2 sm:mt-0 flex items-center">
                     <FaCalendarAlt className="text-gray-400 mr-1" />
-                    Applied on: {new Date(app.applied_at).toLocaleDateString()}
+                    Applied on: {new Date(app.application_date).toLocaleDateString()}
                   </span>
                 </div>
               </div>
