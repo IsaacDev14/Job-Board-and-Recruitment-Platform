@@ -1,7 +1,7 @@
 // src/components/DeleteJobModal.tsx
 import React from 'react';
 import { FaTimes, FaTrash } from 'react-icons/fa';
-import type { Job } from '../types/job';
+import type { Job } from '../types/job'; // Ensure type import
 
 interface DeleteJobModalProps {
   job: Job;

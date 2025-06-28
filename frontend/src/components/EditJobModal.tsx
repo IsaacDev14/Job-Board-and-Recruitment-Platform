@@ -1,7 +1,7 @@
 // src/components/EditJobModal.tsx
 import React, { useState, useEffect } from 'react';
 import { FaTimes } from 'react-icons/fa';
-import type { Job } from '../types/job';
+import type { Job } from '../types/job'; // Ensure type import
 
 interface EditJobModalProps {
   job: Job;
@@ -24,7 +24,7 @@ const EditJobModal: React.FC<EditJobModalProps> = ({ job, onClose, onSave, isLoa
     setLocation(job.location);
     setSalaryRange(job.salary_range);
     setType(job.type); // Update job type
-  }, [job]);
+  }, [job]); // Dependency array includes 'job' to re-initialize state when job prop changes
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

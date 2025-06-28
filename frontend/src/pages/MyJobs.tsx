@@ -1,12 +1,14 @@
 // src/pages/MyJobs.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api/api';
-import { useAuth } from '../context/useAuth'; // Correct import path for useAuth
+import { useAuth } from '../context/useAuth';
 import type { Job } from '../types/job';
 import {
   Briefcase, MapPin, DollarSign, Building2, PlusCircle, Trash2, Pencil
 } from 'lucide-react';
-import NotificationToast from '../components/NotificationToast'; // Added NotificationToast
+import NotificationToast from '../components/NotificationToast';
+import EditJobModal from '../components/EditJobModal';   // Import EditJobModal
+import DeleteJobModal from '../components/DeleteJobModal'; // Import DeleteJobModal
 
 interface MyJobsProps {
   onNavigate: (page: string, jobId?: number) => void;
@@ -16,79 +18,122 @@ const MyJobs: React.FC<MyJobsProps> = ({ onNavigate }) => {
   const { user, isAuthenticated } = useAuth();
   const [myJobs, setMyJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // State for Modals
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [isModalLoading, setIsModalLoading] = useState(false); // Loading state for modal operations
 
   const fetchJobs = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    setNotification(null); // Clear previous notifications
+    setNotification(null);
 
-    console.log("MyJobs: Attempting to fetch jobs...");
+    console.log("MyJobs: --- Starting fetchJobs ---");
     console.log("MyJobs: isAuthenticated:", isAuthenticated);
-    console.log("MyJobs: user:", user);
+    console.log("MyJobs: user object:", user);
 
     if (!isAuthenticated || !user || user.role !== 'recruiter') {
-      console.error("MyJobs: Not authenticated or not a recruiter. Rendering error message.");
+      console.error("MyJobs: Not authenticated or not a recruiter. Setting error state.");
       setError('You must be logged in as a recruiter to view this page.');
       setIsLoading(false);
       return;
     }
 
-    // *** IMPORTANT CHANGE HERE ***
-    // Fetch jobs based on recruiter_id (which is user.id) instead of company_id.
-    // The Job model in your backend has a recruiter_id foreign key.
     const recruiterId = user.id;
+    console.log("MyJobs: Determined recruiterId from user.id:", recruiterId);
+
     if (!recruiterId) {
       console.warn("MyJobs: Recruiter user ID is missing. Cannot fetch jobs.");
       setError('Your recruiter profile is incomplete. User ID is missing.');
       setIsLoading(false);
-      setMyJobs([]); // Ensure no old jobs are displayed
+      setMyJobs([]);
       return;
     }
 
     try {
-      console.log(`MyJobs: Fetching jobs for recruiter_id: ${recruiterId}`);
-      // Use recruiter_id in the query. _expand=company is still useful to get company details.
-      const res = await api.get<Job[]>(`/jobs?_expand=company&recruiter_id=${recruiterId}`);
+      const apiUrl = `/jobs?_expand=company&recruiter_id=${recruiterId}`;
+      console.log(`MyJobs: Attempting API call to: ${apiUrl}`);
+      const res = await api.get<Job[]>(apiUrl);
       setMyJobs(res.data);
-      console.log("MyJobs: Jobs fetched successfully:", res.data.length, "jobs.");
+      console.log("MyJobs: API call successful. Received data:", res.data);
+      console.log("MyJobs: Jobs fetched successfully. Number of jobs:", res.data.length);
     } catch (err) {
       console.error("MyJobs: Failed to load your jobs:", err);
       setError('Failed to load your jobs. Please try again.');
       setNotification({ message: 'Failed to load jobs.', type: 'error' });
     } finally {
       setIsLoading(false);
+      console.log("MyJobs: --- fetchJobs finished ---");
     }
-  }, [isAuthenticated, user]); // Dependencies for useCallback
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     fetchJobs();
-  }, [fetchJobs]); // Dependent on the memoized fetchJobs function
+  }, [fetchJobs]);
 
-  const handleDelete = async (id: number) => {
-    // Replaced window.confirm with a console log as per instructions to avoid alert()
-    console.log(`MyJobs: Confirming delete for job ID: ${id}. (In a real app, use a custom modal)`);
-    // For now, proceed with delete directly for testing purposes.
-    // In a production app, you would use a custom modal for confirmation.
+  // --- Modal Management Functions ---
 
-    setIsDeleting(true);
-    setNotification(null);
+  const handleEditClick = (job: Job) => {
+    setSelectedJob(job);
+    setShowEditModal(true);
+  };
+
+  const handleDeleteClick = (job: Job) => {
+    setSelectedJob(job);
+    setShowDeleteModal(true);
+  };
+
+  const closeModals = () => {
+    setShowEditModal(false);
+    setShowDeleteModal(false);
+    setSelectedJob(null);
+    setIsModalLoading(false); // Reset modal loading state
+  };
+
+  const handleSaveEditedJob = useCallback(async (jobId: number, updatedData: Partial<Job>) => {
+    setIsModalLoading(true);
     try {
-      await api.delete(`/jobs/${id}`);
-      setMyJobs(prev => prev.filter(j => j.id !== id));
+      // Ensure salary is sent as 'salary' not 'salary_range' if your backend expects 'salary'
+      // Adjust this based on your backend's Job model for updating
+      const dataToSend = { ...updatedData, salary: updatedData.salary_range };
+      delete dataToSend.salary_range; // Remove if backend expects 'salary'
+
+      const res = await api.put<Job>(`/jobs/${jobId}`, dataToSend);
+      setMyJobs(prevJobs =>
+        prevJobs.map(job => (job.id === jobId ? res.data : job))
+      );
+      setNotification({ message: 'Job updated successfully!', type: 'success' });
+      console.log("MyJobs: Job updated:", res.data);
+      closeModals(); // Close modal on success
+    } catch (err) {
+      console.error("MyJobs: Failed to update job:", err);
+      setNotification({ message: 'Failed to update job. Please try again.', type: 'error' });
+    } finally {
+      setIsModalLoading(false);
+    }
+  }, []);
+
+  const handleConfirmDeleteJob = useCallback(async (jobId: number) => {
+    setIsModalLoading(true);
+    try {
+      await api.delete(`/jobs/${jobId}`);
+      setMyJobs(prev => prev.filter(j => j.id !== jobId));
       setNotification({ message: 'Job deleted successfully!', type: 'success' });
-      console.log(`MyJobs: Job ID ${id} deleted successfully.`);
+      console.log(`MyJobs: Job ID ${jobId} deleted successfully.`);
+      closeModals(); // Close modal on success
     } catch (err) {
       console.error("MyJobs: Failed to delete the job:", err);
       setNotification({ message: 'Failed to delete the job. Please try again.', type: 'error' });
     } finally {
-      setIsDeleting(false);
+      setIsModalLoading(false);
     }
-  };
+  }, []);
 
-  // Loading state
+  // Loading state for initial fetch
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -104,10 +149,9 @@ const MyJobs: React.FC<MyJobsProps> = ({ onNavigate }) => {
       <div className="min-h-screen flex items-center justify-center bg-red-50">
         <div className="text-red-600 font-medium bg-white p-6 rounded-xl shadow-lg border text-center">
           {error}
-          {/* Only show "Go to Profile / Login" button if the error is due to auth or missing recruiter ID */}
           {(!isAuthenticated || !user || user.role !== 'recruiter' || !user.id) && (
             <button
-              onClick={() => onNavigate('profile')} // Suggest going to profile if user ID is missing or general auth issues
+              onClick={() => onNavigate('profile')}
               className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
             >
               Go to Profile / Login
@@ -185,18 +229,18 @@ const MyJobs: React.FC<MyJobsProps> = ({ onNavigate }) => {
                 {/* Action Buttons */}
                 <div className="flex gap-3">
                   <button
-                    onClick={() => onNavigate('post-job', job.id)} // Pass job.id for editing
+                    onClick={() => handleEditClick(job)} // Open edit modal
                     className="px-4 py-2 rounded-md bg-yellow-400 hover:bg-yellow-500 text-white font-medium flex items-center gap-2 shadow"
-                    disabled={isDeleting}
+                    disabled={isModalLoading}
                   >
                     <Pencil size={16} /> Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(job.id)}
+                    onClick={() => handleDeleteClick(job)} // Open delete modal
                     className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white font-medium flex items-center gap-2 shadow"
-                    disabled={isDeleting}
+                    disabled={isModalLoading}
                   >
-                    <Trash2 size={16} /> {isDeleting ? 'Deleting...' : 'Delete'}
+                    <Trash2 size={16} /> Delete
                   </button>
                 </div>
               </div>
@@ -213,6 +257,26 @@ const MyJobs: React.FC<MyJobsProps> = ({ onNavigate }) => {
       >
         <PlusCircle className="w-5 h-5" />
       </button>
+
+      {/* Edit Job Modal */}
+      {showEditModal && selectedJob && (
+        <EditJobModal
+          job={selectedJob}
+          onClose={closeModals}
+          onSave={handleSaveEditedJob}
+          isLoading={isModalLoading}
+        />
+      )}
+
+      {/* Delete Job Modal */}
+      {showDeleteModal && selectedJob && (
+        <DeleteJobModal
+          job={selectedJob}
+          onClose={closeModals}
+          onConfirm={handleConfirmDeleteJob}
+          isLoading={isModalLoading}
+        />
+      )}
     </div>
   );
 };
