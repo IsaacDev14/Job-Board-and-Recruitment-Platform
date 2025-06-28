@@ -1,4 +1,3 @@
-// src/pages/JobDetails.tsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/api';
@@ -83,11 +82,23 @@ const JobDetails: React.FC<JobDetailsProps> = ({ jobId, onNavigate }) => {
           </button>
         )}
 
-        <img
-          src="https://placehold.co/800x400?text=Job+Details"
-          className="w-full h-64 object-cover rounded-lg"
-          alt="Job banner"
-        />
+        {/* Job image */}
+        {job.image ? (
+          <img
+            src={job.image}
+            alt={job.title}
+            className="w-full h-64 object-cover rounded-lg"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.onerror = null;
+              target.src = 'https://placehold.co/800x400?text=Job+Image';
+            }}
+          />
+        ) : (
+          <div className="w-full h-64 bg-gray-200 flex items-center justify-center rounded-lg text-gray-500">
+            No Image Available
+          </div>
+        )}
 
         <h1 className="text-4xl font-bold">{job.title}</h1>
         <p className="text-lg text-gray-700">{job.company?.name || 'Company not available'}</p>
