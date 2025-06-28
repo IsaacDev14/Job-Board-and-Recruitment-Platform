@@ -158,7 +158,8 @@ class CurrentUser(Resource):
                 "username": user.username,
                 "email": user.email,
                 "is_recruiter": user.is_recruiter,
-                "company_id": company_id
+                "company_id": company_id,
+                "role": role  
             }
             return user_data, 200
         auth_ns.abort(404, message="User not found")

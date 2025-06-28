@@ -53,7 +53,6 @@ const App: React.FC = () => {
           return;
         }
 
-        // Even if already on correct page, we can set it as "navigated"
         setHasNavigatedAfterAuth(true);
       } else {
         const protectedRoutes = [
@@ -91,20 +90,40 @@ const App: React.FC = () => {
     }
 
     switch (currentPage) {
-      case 'home': return <Home onNavigate={handleNavigate} />;
-      case 'jobs': return <Jobs onNavigate={handleNavigate} />;
+      case 'home':
+        return <Home onNavigate={handleNavigate} />;
+      case 'jobs':
+        return <Jobs onNavigate={handleNavigate} />;
       case 'job-details':
         return selectedJobId !== undefined
           ? <JobDetails jobId={selectedJobId} onNavigate={handleNavigate} />
           : <p>Job ID not provided.</p>;
-      case 'login': return <Login onNavigate={handleNavigate} />;
-      case 'register': return <Register onNavigate={handleNavigate} />;
-      case 'forgot-password': return <ForgotPassword onNavigate={handleNavigate} />;
-      case 'reset-password': return <ResetPassword onNavigate={handleNavigate} />;
+      case 'login':
+        return <Login onNavigate={handleNavigate} />;
+      case 'register':
+        return <Register onNavigate={handleNavigate} />;
+      case 'forgot-password':
+        return <ForgotPassword onNavigate={handleNavigate} />;
+      case 'reset-password':
+        return <ResetPassword onNavigate={handleNavigate} />;
       case 'dashboard':
+        if (user?.role === 'recruiter') {
+          return (
+            <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['recruiter']}>
+              <RecruiterDashboard onNavigate={handleNavigate} />
+            </ProtectedRoute>
+          );
+        } else {
+          return (
+            <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['job_seeker']}>
+              <JobSeekerDashboard onNavigate={handleNavigate} />
+            </ProtectedRoute>
+          );
+        }
+      case 'recruiter-dashboard':
         return (
-          <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['job_seeker']}>
-            <JobSeekerDashboard onNavigate={handleNavigate} />
+          <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['recruiter']}>
+            <RecruiterDashboard onNavigate={handleNavigate} />
           </ProtectedRoute>
         );
       case 'post-job':
@@ -123,12 +142,6 @@ const App: React.FC = () => {
         return (
           <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['job_seeker']}>
             <SavedJobs onNavigate={handleNavigate} />
-          </ProtectedRoute>
-        );
-      case 'recruiter-dashboard':
-        return (
-          <ProtectedRoute fallback={<Login onNavigate={handleNavigate} />} allowedRoles={['recruiter']}>
-            <RecruiterDashboard onNavigate={handleNavigate} />
           </ProtectedRoute>
         );
       case 'my-jobs':
@@ -155,7 +168,7 @@ const App: React.FC = () => {
         {renderContent()}
       </main>
       <footer className="bg-gray-900 text-gray-300 py-6 text-center mt-auto">
-        <p>&copy; {new Date().getFullYear()} Job Board Pro. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Job Board Pro. All rights reserved.</p>
       </footer>
     </div>
   );
