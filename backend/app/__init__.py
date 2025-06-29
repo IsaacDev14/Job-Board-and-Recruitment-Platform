@@ -27,13 +27,19 @@ def create_app():
     jwt.init_app(app)
 
     # Setup CORS
-    CORS(app, supports_credentials=True, resources={
-        r"/api/*": {
-            "origins": [app.config['FRONTEND_URL']],
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization"]
+    CORS(
+        app,
+        supports_credentials=True,
+        resources={
+            r"/api/*": {
+                "origins": "*",  # Allow any origin
+                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+                "allow_headers": ["Content-Type", "Authorization"],
+                "expose_headers": ["Content-Type"],
+                "max_age": 86400
+            }
         }
-    })
+    )
 
     # Import and register Blueprints (assuming you have app/routes.py with api_bp)
     from app.routes import api_bp
