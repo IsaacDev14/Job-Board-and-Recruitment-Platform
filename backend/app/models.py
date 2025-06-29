@@ -57,7 +57,7 @@ class Job(db.Model):
     __tablename__ = 'jobs'  # Explicitly define table name
 
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(255), nullable=False)
+    title = db.Column(db.String(512), nullable=False)
     description = db.Column(db.Text, nullable=False)
     requirements = db.Column(db.Text)
     location = db.Column(db.String(120))
@@ -66,7 +66,7 @@ class Job(db.Model):
     date_posted = db.Column(db.DateTime, default=datetime.utcnow)
     expires_date = db.Column(db.DateTime)
     is_active = db.Column(db.Boolean, default=True)  # Added field for job status
-    image = db.Column(db.String(255), nullable=True)  # Added field for image URL
+    image = db.Column(db.String(512), nullable=True)  # Added field for image URL
 
     recruiter_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=True)
@@ -84,7 +84,7 @@ class Application(db.Model):
     job_id = db.Column(db.Integer, db.ForeignKey('jobs.id'), nullable=False)
     application_date = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.String(50), default='pending')  # e.g., 'pending', 'reviewed', 'accepted', 'rejected'
-    resume_url = db.Column(db.String(255))  # URL to resume
+    resume_url = db.Column(db.String(512))  # URL to resume
     cover_letter_text = db.Column(db.Text)  # Optional cover letter text
 
     def __repr__(self):
