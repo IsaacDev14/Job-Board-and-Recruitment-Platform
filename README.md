@@ -80,27 +80,6 @@ This platform offers a centralized, full-featured system for job listings, appli
 - **Backend:** REST API with Flask, handling authentication, authorization, and CRUD operations for users, jobs, applications, and companies. Passwords are hashed with Bcrypt. Database migrations managed with Flask-Migrate.  
 - **Database:** PostgreSQL stores users, companies, jobs, and applications with proper foreign key relationships ensuring data integrity.
 
-├── backend/ # Flask REST API
-│ ├── app/
-│ │ ├── init.py # App factory & extensions
-│ │ ├── models.py # SQLAlchemy models (User, Company, Job, Application, SavedJob)
-│ │ └── routes/ # API blueprints & route handlers
-│ ├── config.py # App config
-│ ├── migrations/ # Alembic migrations
-│ ├── requirements.txt
-│ └── run.py # App entry point
-│
-├── frontend/ # React SPA
-│ ├── src/
-│ │ ├── App.tsx # Main app component with routing and auth logic
-│ │ ├── pages/ # Page components (Jobs, JobDetails, Login, Register, Dashboards, etc.)
-│ │ ├── context/ # React Context for authentication and global state
-│ │ ├── components/ # UI components (ProtectedRoute, Topbar, etc.)
-│ │ ├── api/ # API utility functions
-│ ├── package.json
-│ └── vite.config.ts
-│
-└── README.md
 
 ---
 
