@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Home, LayoutDashboard, Compass, Briefcase, PlusCircle, Heart, Settings, User, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 
-// ... NavLink component is unchanged ...
 interface NavLinkProps {
   icon: React.ReactNode;
   text: string;
@@ -11,12 +10,16 @@ interface NavLinkProps {
 }
 
 const NavLink: React.FC<NavLinkProps> = ({ icon, text, onClick, mobile = false }) => (
-  <button onClick={onClick} className={`flex items-center space-x-2 ${ mobile ? 'w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700' : 'text-gray-700 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400'}`}>
+  <button
+    onClick={onClick}
+    className={`flex items-center space-x-2 ${mobile
+      ? 'w-full px-4 py-2 text-left text-white hover:bg-gray-800'
+      : 'text-gray-700 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400'}`}
+  >
     {icon}
     <span className="text-sm font-medium">{text}</span>
   </button>
 );
-
 
 const Topbar: React.FC<{ onNavigate: (page: string) => void }> = ({ onNavigate }) => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -46,7 +49,6 @@ const Topbar: React.FC<{ onNavigate: (page: string) => void }> = ({ onNavigate }
             </>
           )}
 
-          {/* --- 4. UPDATE RECRUITER LINKS --- */}
           {isAuthenticated && user?.role === 'recruiter' && (
             <>
               <NavLink icon={<LayoutDashboard size={18} />} text="Dashboard" onClick={() => handleNavLinkClick('recruiter-dashboard')} />
@@ -54,8 +56,7 @@ const Topbar: React.FC<{ onNavigate: (page: string) => void }> = ({ onNavigate }
               <NavLink icon={<PlusCircle size={18} />} text="Post Job" onClick={() => handleNavLinkClick('post-job')} />
             </>
           )}
-          
-          {/* ... other links are unchanged ... */}
+
           {isAuthenticated && user?.role === 'admin' && (
             <NavLink icon={<Settings size={18} />} text="Admin" onClick={() => handleNavLinkClick('admin-dashboard')} />
           )}
@@ -65,7 +66,13 @@ const Topbar: React.FC<{ onNavigate: (page: string) => void }> = ({ onNavigate }
           )}
 
           {isAuthenticated ? (
-            <button onClick={() => { logout(); handleNavLinkClick('home'); }} className="flex items-center space-x-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-600">
+            <button
+              onClick={() => {
+                logout();
+                handleNavLinkClick('home');
+              }}
+              className="flex items-center space-x-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-600"
+            >
               <LogOut size={18} />
               <span className="text-sm font-medium">Logout</span>
             </button>
@@ -85,7 +92,7 @@ const Topbar: React.FC<{ onNavigate: (page: string) => void }> = ({ onNavigate }
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="md:hidden bg-white dark:bg-gray-900 shadow-lg border-t border-gray-200 dark:border-gray-700">
+        <div className="md:hidden bg-gray-900 shadow-lg border-t border-gray-700">
           <nav className="flex flex-col space-y-1 py-4">
             <NavLink icon={<Home size={20} />} text="Home" onClick={() => handleNavLinkClick('home')} mobile />
 
@@ -105,11 +112,22 @@ const Topbar: React.FC<{ onNavigate: (page: string) => void }> = ({ onNavigate }
               </>
             )}
 
-            {/* ... other links ... */}
-            {isAuthenticated && user?.role === 'admin' && (<NavLink icon={<Settings size={20} />} text="Admin" onClick={() => handleNavLinkClick('admin-dashboard')} mobile />)}
-            {isAuthenticated && (<NavLink icon={<User size={20} />} text="Profile" onClick={() => handleNavLinkClick('profile')} mobile />)}
+            {isAuthenticated && user?.role === 'admin' && (
+              <NavLink icon={<Settings size={20} />} text="Admin" onClick={() => handleNavLinkClick('admin-dashboard')} mobile />
+            )}
+
+            {isAuthenticated && (
+              <NavLink icon={<User size={20} />} text="Profile" onClick={() => handleNavLinkClick('profile')} mobile />
+            )}
+
             {isAuthenticated ? (
-              <button onClick={() => { logout(); handleNavLinkClick('home'); }} className="flex items-center space-x-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-600 px-4 py-2 text-left">
+              <button
+                onClick={() => {
+                  logout();
+                  handleNavLinkClick('home');
+                }}
+                className="flex items-center space-x-2 text-red-400 hover:text-red-200 px-4 py-2 text-left"
+              >
                 <LogOut size={20} />
                 <span className="text-sm font-medium">Logout</span>
               </button>
