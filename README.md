@@ -131,7 +131,7 @@ This platform offers a centralized, full-featured system for job listings, appli
 
 ---
 
-## eam Contacts
+## Team Contacts
 
 - Dorothy Chepkoech 
 - Isaac Mwiti Kubai 
